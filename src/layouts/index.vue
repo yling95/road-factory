@@ -1,0 +1,129 @@
+<template>
+  <a-layout class="layout">
+    <!-- <a-layout-header class="header">
+      <div class="left">
+        <img src="@/assets/logo.png" class="logo-img" alt="logo" />
+        <div class="system">
+          <span class="company-name">大路通</span>
+          <span class="system-name">订单管理系统</span>
+        </div>
+      </div>
+      <div class="right">
+        <SvgIcon name="screen-icon" className="screen-icon" @click="gotoLargeScreen" />
+        <a-dropdown placement="bottomRight" v-model:open="popoverOpen">
+          <template #overlay>
+            <a-menu>
+              <a-menu-item @click="handleUpdatePassword">修改密码</a-menu-item>
+              <a-menu-item @click="handleLogout">退出登录</a-menu-item>
+            </a-menu>
+          </template>
+          <div class="person-box">
+            <img
+              class="user-img"
+              src="@/assets/images/common/user.png"
+              v-if="!userStore.userInfo.real_name"
+            />
+            <div class="user-name" v-else>{{ getFirstTwo(userStore.userInfo.real_name) }}</div>
+
+            <SvgIcon name="arrow-down-s-line" v-if="!popoverOpen" className="down-icon" />
+            <SvgIcon name="arrow-up-s-line" v-else className="down-icon" />
+          </div>
+        </a-dropdown>
+      </div>
+    </a-layout-header> -->
+    <headerBar></headerBar>
+    <a-layout>
+      <left-menu />
+      <a-layout class="content">
+        <a-layout-content>
+          <main class="main">
+            <!-- <a-spin
+              wrapper-class-name="app-spin"
+              :spinning="globalStore.loadingOptions.type === 'stair' && globalStore.loading"
+              :delay="globalStore.loadingOptions.delay"
+              :tip="globalStore.loadingOptions.tip"
+            > -->
+            <router-view />
+            <!-- </a-spin> -->
+          </main>
+        </a-layout-content>
+      </a-layout>
+    </a-layout>
+  </a-layout>
+</template>
+<script lang="ts" setup>
+import leftMenu from './_components/left-menu.vue'
+import headerBar from './_components/header-bar.vue'
+import { SSE } from '@/utils/SSE'
+import { baseURL } from '@/request'
+import { useUserStore } from '@/stores/user'
+import { Modal } from 'ant-design-vue'
+import { useRouter } from 'vue-router'
+import { onUnmounted } from 'vue'
+
+const router = useRouter()
+// 角色对操作权限判断
+const userStore = useUserStore()
+const nowUserType: any = userStore.userInfo.role
+const isSalesManage = nowUserType !== 'factory'
+const isfactoryManage = nowUserType !== 'sales'
+
+// SSE
+const sse = new SSE({
+  messageCb: (message: any) => {
+    console.log('SSE====', message)
+    userStore.updateSseMassageData(message)
+    if (message.operation === 'create_order' && isfactoryManage) {
+      Modal.confirm({
+        content: '有新订单待接收,请前往接受',
+        onOk: () => {
+          router.push('/order/list')
+        },
+      })
+    }
+    if (message.operation === 'production_done' && isSalesManage) {
+      Modal.confirm({
+        content: '有订单完成，请前往填写收货信息',
+        onOk: () => {
+          router.push('/order/list')
+        },
+      })
+    }
+
+    // if (code === -3) {
+    //   code3(text)
+    // } else if (code === -7) {
+    //   code7(text)
+    // } else if (code === -16) {
+    //   code16()
+    // } else if (code === 1) {
+    //   message.success(text)
+    // } else if (code === -22) {
+    //   message.error(text)
+    // } else if (code === -23) {
+    //   message.error(text)
+    // }
+  },
+})
+// 建立连接
+sse.selectAndLink(`${baseURL}/sse/connect`)
+onUnmounted(() => {
+  sse.closeLink()
+})
+</script>
+<style scoped lang="less">
+.layout {
+  height: 100vh;
+}
+.slider {
+  background: @background1;
+}
+.content {
+  background: @background5;
+  border-radius: 12px;
+  padding: 32px;
+  .main {
+    height: 100%;
+  }
+}
+</style>
