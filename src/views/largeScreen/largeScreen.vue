@@ -493,8 +493,8 @@ onUnmounted(() => {
 <style scoped lang="less">
 .largeScreen {
   background: #f2eae1;
-  width: 100vw;
-  height: 100vh;
+  min-width: 1920px;
+  min-height: 100vh;
   .header {
     display: flex;
     padding: 14px 32px;

@@ -118,7 +118,7 @@
         </a-form-item>
       </a-form>
     </a-modal>
-    <a-modal v-model:visible="previewVisible" :footer="null" :title="previewTitle">
+    <a-modal v-model:open="previewVisible" :footer="null" :title="previewTitle">
       <template v-if="isPreviewImage">
         <img alt="example" style="width: 100%" :src="previewImage" />
       </template>

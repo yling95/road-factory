@@ -1,6 +1,6 @@
 <template>
   <a-modal
-    v-model:visible="deliveryInfoVisible"
+    v-model:open="deliveryInfoVisible"
     :ok-text="'打印'"
     @ok="saveAndPrint"
     @cancel="saveAndPrintClose"

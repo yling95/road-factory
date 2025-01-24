@@ -44,7 +44,6 @@
         <a-table
           :loading="loading"
           :columns="columns"
-          :scroll="{ y: 450 }"
           :dataSource="dataList"
           :pagination="{
             total: pageForm.total,

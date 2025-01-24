@@ -23,6 +23,7 @@
           placeholder="出库类型"
           :options="Shipment_Types"
           allow-clear
+          @change="handleSearch"
           :showSearch="false"
           showArrow
         >
@@ -36,6 +37,7 @@
           placeholder="物流公司"
           :options="Logistics_Company"
           allow-clear
+          @change="handleSearch"
           :showSearch="false"
           showArrow
         >
@@ -50,7 +52,6 @@
       class="table"
       :dataSource="dataList"
       :loading="loading"
-      :scroll="{ y: 450 }"
     >
       <template #bodyCell="{ column, record }">
         <div v-if="column.key === 'delivery_verify_time'">
@@ -137,6 +138,7 @@ const columns = ref([
     title: '物流信息',
     dataIndex: 'operation',
     key: 'operation',
+    width: 200,
   },
   {
     title: '出库证明',
@@ -174,7 +176,7 @@ const handleSearch = () => {
     pageForm.start_date = undefined
     pageForm.end_date = undefined
   }
-  getDataList({ ...pageForm, pages: 1 })
+  getDataList({ ...pageForm, page: 1 })
 }
 
 // 预览出库证明

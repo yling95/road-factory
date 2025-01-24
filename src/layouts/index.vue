@@ -82,7 +82,7 @@ onUnmounted(() => {
 </script>
 <style scoped lang="less">
 .layout {
-  height: 100vh;
+  min-height: 100vh;
 }
 .slider {
   background: @background1;
@@ -90,7 +90,9 @@ onUnmounted(() => {
 .content {
   background: @background5;
   border-radius: 12px;
+  height: calc(100vh - 64px);
   padding: 32px;
+  overflow: auto;
   .main {
     height: 100%;
   }

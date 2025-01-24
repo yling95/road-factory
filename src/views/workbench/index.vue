@@ -81,7 +81,7 @@
             :columns="waiteOutColumns"
             :dataSource="waiteOutList"
             :loading="loadingWaiteOut"
-            :scroll="{ y: 211 }"
+            :scroll="{ y: 160 }"
             :pagination="false"
             @change="waiteOutTableChange"
           >
@@ -140,7 +140,7 @@
           :columns="urgencyColumns"
           :dataSource="urgencyList"
           :loading="loadingUrgency"
-          :scroll="{ y: 400 }"
+          :scroll="{ y: 480 }"
           :pagination="{
             total: urgencyPageForm.total,
             current: urgencyPageForm.page,
@@ -487,10 +487,10 @@ onMounted(async () => {
   }
   .content-statistics {
     display: flex;
-    width: 100%;
+    width: calc(90% - 32px);
     align-items: stretch; /* 确保子元素高度一致 */
     .left {
-      width: 940px;
+      width: 60%;
       flex-shrink: 0;
       .left-top {
         background-color: #fff;
@@ -578,7 +578,7 @@ onMounted(async () => {
       flex-shrink: 1;
       box-sizing: border-box;
       margin-left: 32px;
-      width: calc(100% - 940px);
+      width: calc(100% - 60% - 64px);
       background-color: #fff;
       border-radius: 12px;
       padding: 19px 24px;
