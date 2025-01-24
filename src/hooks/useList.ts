@@ -9,15 +9,15 @@ export interface ResponseData {
   data: {
     data_list: any[]
     total: number
-    pages: number
+    page: number
   }
 }
 
 interface PageInfo {
-  offset: number
+  // offset: number
   limit: number
   total: number
-  pages?: number
+  page: number
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -29,7 +29,7 @@ export default function <Params, D = any>(api: any, otherParams: Params, callbac
 
   // 初始化查询数据
   type PageForm = PageInfo & Params
-  const pageForm = reactive<PageForm>({ offset: 1, limit: 10, total: 0, ...otherParams })
+  const pageForm = reactive<PageForm>({ page: 1, limit: 10, total: 0, ...otherParams })
   const initPageForm = cloneDeep(pageForm) //复制一份
 
   const dataList = ref<D[]>([])
@@ -46,14 +46,14 @@ export default function <Params, D = any>(api: any, otherParams: Params, callbac
       }
       dataList.value = data.value?.data.data_list || []
       pageForm.total = data.value?.data.total || 0
-      pageForm.pages = data.value?.data.pages || 0
+      // pageForm.page = data.value?.data.page || 0
       // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       callback && callback(data.value)
 
       // 当前页码数大于最大页码数时，重置页码数
       const maxOffset = Math.ceil(pageForm.total / pageForm.limit)
       if (maxOffset && pageForm.offset > maxOffset) {
-        getDataList({ offset: maxOffset } as Partial<PageForm>)
+        getDataList({ page: maxOffset } as Partial<PageForm>)
       }
     } catch (error) {
       console.error(error)

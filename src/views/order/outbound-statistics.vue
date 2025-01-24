@@ -45,8 +45,42 @@
         <a-range-picker v-model:value="searchTime" @change="handleSearch" />
       </div>
     </div>
-    <a-table :columns="columns" class="table" :loading="loading" :scroll="{ y: 450 }"> </a-table>
+    <a-table
+      :columns="columns"
+      class="table"
+      :dataSource="dataList"
+      :loading="loading"
+      :scroll="{ y: 450 }"
+    >
+      <template #bodyCell="{ column, record }">
+        <div v-if="column.key === 'delivery_verify_time'">
+          {{ dayjs(record.delivery_verify_time).format('YYYY-MM-DD HH:mm:ss') }}
+        </div>
+        <div v-if="column.key === 'delivery_verify_url'">
+          <a-button type="link" v-if="record.delivery_verify_url" @click="preview(record)">查看 </a-button>
+        </div>
+      </template>
+    </a-table>
   </main-card>
+  <a-modal v-model:open="previewVisible" :footer="null" :mask-closable="false">
+    <div class="preview-content">
+      <a-image
+        v-if="isImage(previewItem.delivery_verify_url)"
+        :src="getImgUrlByUrl(previewItem.delivery_verify_url)"
+        :height="220"
+        :width="160"
+        class="sample-img"
+        alt=""
+      />
+
+      <video
+        v-if="isVideo(previewItem.delivery_verify_url)"
+        :src="getImgUrlByUrl(previewItem.delivery_verify_url)"
+        controls
+        width="300"
+      ></video>
+    </div>
+  </a-modal>
 </template>
 
 <script lang="ts" setup>
@@ -55,7 +89,9 @@ import dayjs, { Dayjs } from 'dayjs'
 import useList from '@/hooks/useList'
 
 import { Shipment_Types, Logistics_Company } from '@/views/baseData'
+import { getImgUrlByUrl } from '@/utils/common'
 import { orderApi } from '@/services/api'
+import { isImage, isVideo } from '@/utils/index'
 
 // 表格结构
 const columns = ref([
@@ -98,15 +134,15 @@ const columns = ref([
     width: 200,
   },
   {
+    title: '物流信息',
+    dataIndex: 'operation',
+    key: 'operation',
+  },
+  {
     title: '出库证明',
     dataIndex: 'delivery_verify_url',
     key: 'delivery_verify_url',
     width: 200,
-  },
-  {
-    title: '物流信息',
-    dataIndex: 'operation',
-    key: 'operation',
   },
 ])
 
@@ -125,7 +161,7 @@ const { dataList, getDataList, loading, pageForm } = useList(
   },
   () => {
     console.log('获取统计', dataList.value)
-  },
+  }
 )
 
 // 查询
@@ -138,9 +174,16 @@ const handleSearch = () => {
     pageForm.start_date = undefined
     pageForm.end_date = undefined
   }
-  getDataList({ ...pageForm, offset: 1 })
+  getDataList({ ...pageForm, pages: 1 })
 }
 
+// 预览出库证明
+const previewVisible = ref(false)
+const previewItem = ref()
+const preview = (item: any) => {
+  previewVisible.value = true
+  previewItem.value = item
+}
 onMounted(() => {
   getDataList()
 })
@@ -154,5 +197,11 @@ onMounted(() => {
 }
 .table {
   padding: 20px 0;
+}
+.preview-content{
+  display: flex;
+  align-content: center;
+  padding-top: 32px;
+  justify-content: center;
 }
 </style>

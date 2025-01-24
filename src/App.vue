@@ -26,7 +26,7 @@ import dayjs from 'dayjs'
 import 'dayjs/locale/zh-cn'
 import { useGlobalStore } from '@/stores/global'
 import { message } from 'ant-design-vue'
-import { onUnmounted } from 'vue'
+import { onUnmounted, onMounted } from 'vue'
 dayjs.locale('zh-cn')
 
 const globalStore = useGlobalStore()
@@ -44,7 +44,18 @@ const visibilitychange = () => {
 document.addEventListener('visibilitychange', visibilitychange)
 onUnmounted(() => {
   document.removeEventListener('visibilitychange', visibilitychange)
+  // window.removeEventListener('resize', resize)
 })
+
+// onMounted(() => {
+//   resize()
+//   window.addEventListener('resize', resize)
+// })
+// const resize = () => {
+//   const scale = window.innerWidth / 1920
+//   document.documentElement.style.transform = `scale(${scale})`
+//   document.documentElement.style.transformOrigin = 'top left'
+// }
 </script>
 <style lang="less">
 .app-spin {

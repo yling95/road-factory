@@ -11,8 +11,8 @@
             style="width: 239px"
             placeholder="用户名/手机号"
             @press-enter="handleSearch"
-            @change="!pageForm.account && handleSearch()"
-            v-model:value="pageForm.account"
+            @change="!pageForm.search && handleSearch()"
+            v-model:value="pageForm.search"
             allowClear
           >
             <template #prefix>
@@ -43,7 +43,7 @@
           :dataSource="dataList"
           :pagination="{
             total: pageForm.total,
-            current: pageForm.offset,
+            current: pageForm.page,
             pageSize: pageForm.limit,
             showTotal: (total: number) => `共${total}条记录`,
             showSizeChanger: true,
@@ -273,17 +273,16 @@ const handUserOperate = async (type: 'delete' | 'resetPwd', item: any) => {
 
 // 查询
 const handleSearch = () => {
-  if (pageForm.account === '') {
-    pageForm.account = undefined
+  if (pageForm.search === '') {
+    pageForm.search = undefined
   }
-  getDataList({ ...pageForm, offset: 1 })
+  getDataList({ ...pageForm, page: 1 })
 }
 
 const { dataList, getDataList, loading, pageForm } = useList(
   userApi.userList,
   {
-    account: undefined,
-    mobile: undefined,
+    search: undefined,
     role: undefined,
   },
   () => {

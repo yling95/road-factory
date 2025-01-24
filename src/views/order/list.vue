@@ -48,7 +48,7 @@
           :dataSource="dataList"
           :pagination="{
             total: pageForm.total,
-            current: pageForm.offset,
+            current: pageForm.page,
             pageSize: pageForm.limit,
             showTotal: (total: number) => `共${total}条记录`,
             showSizeChanger: true,
@@ -294,7 +294,7 @@ const handleSearch = () => {
     pageForm.start_date = undefined
     pageForm.end_date = undefined
   }
-  getDataList({ ...pageForm, offset: 1 })
+  getDataList({ ...pageForm, page: 1 })
 }
 
 // 新增
@@ -423,8 +423,12 @@ const { dataList, getDataList, loading, pageForm } = useList(
 )
 const tableChange: TableProps<any>['onChange'] = (pagination) => {
   pageForm.limit = pagination.pageSize || 10
+  console.log('-----',pagination);
+  pageForm.page = pagination.current
+  console.log('搜索', pageForm);
+
   getDataList({
-    offset: pagination.current,
+    page: pagination.current,
   })
 }
 

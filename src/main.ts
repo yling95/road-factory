@@ -34,3 +34,17 @@ app.use(router)
 app.use(store)
 
 app.mount('#app')
+
+// 在 main.js 或 App.vue 中设置动态根字体大小
+// function setRootFontSize() {
+//   const designWidth = 1920 // 设计稿宽度
+//   const fontSize = window.innerWidth / (designWidth / 100) // 动态计算根字体
+//   document.documentElement.style.fontSize = `${fontSize}px`
+// }
+
+// // 初始化设置字体大小
+// setRootFontSize()
+
+// // 监听窗口变化
+// window.addEventListener('resize', setRootFontSize);
+

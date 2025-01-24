@@ -163,13 +163,13 @@ const disabledDate = (current: any) => {
 // TODO:订单出库
 const outStoreFormRef = ref()
 const outStoreForm = reactive({
-  url: '',
+  url: undefined,
   remarks: '',
 })
 
 // 制作完成
 const finishFormRef = ref()
-const finishForm = reactive({ effect_url: '' })
+const finishForm = reactive({ effect_url: undefined })
 const fileList = ref<any[]>([])
 const previewVisible = ref(false)
 const previewImage = ref('')
@@ -239,8 +239,8 @@ const customRequest = async (options: UploadRequestOption) => {
 }
 const removeFile = (file: any) => {
   fileList.value = []
-  finishForm.effect_url = ''
-  outStoreForm.url = ''
+  finishForm.effect_url = undefined
+  outStoreForm.url = undefined
 }
 const handlePreview = async (file: UploadProps['fileList'][number]) => {
   if (file.url) {

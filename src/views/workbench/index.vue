@@ -54,7 +54,13 @@
             <img src="@/assets/images/workbench/Rectangle.png" class="rectangle" />
             <div class="title-content">
               <span class="title-text">待出库订单</span>
-              <a-input placeholder="车牌号/客户名称" class="search-input">
+              <a-input
+                placeholder="车牌号/客户名称"
+                v-model:value="waiteOutPageForm.search"
+                @press-enter="handleSearch"
+                @change="!waiteOutPageForm.search && handleSearch()"
+                class="search-input"
+              >
                 <template #prefix>
                   <i class="ri-search-line"></i>
                 </template>
@@ -63,6 +69,8 @@
                 :options="Shipment_Types"
                 placeholder="提货方式"
                 class="shipment_Types"
+                v-model:value="waiteOutPageForm.outbound_type"
+                @change="handleSearch"
                 allow-clear
               ></a-select>
             </div>
@@ -93,11 +101,19 @@
               <div v-if="column.key === 'outbound_type'">
                 {{ findLabelByValue(Shipment_Types, record.outbound_type) }}
               </div>
-              <div v-if="column.key === 'license_plate'" class="car-num">
+              <div
+                v-if="column.key === 'license_plate' && record.outbound_type === 'self_pickup'"
+                class="car-num"
+              >
                 <span class="car-num-text" v-if="!record.editCarNum">{{
                   record.license_plate
                 }}</span>
-                <a-input placeholder="车牌号" v-else></a-input>
+                <a-input
+                  placeholder="车牌号"
+                  v-model:value.trim="updateCarNum"
+                  :maxlength="8"
+                  v-else
+                ></a-input>
                 <a-button
                   class="edit-btn"
                   type="text"
@@ -105,7 +121,7 @@
                   v-if="!record.editCarNum"
                   ><i class="ri-edit-line"></i
                 ></a-button>
-                <a-button class="save-btn" type="primary" @click="record.editCarNum = false" v-else
+                <a-button class="save-btn" type="primary" @click="saveCarNum(record)" v-else
                   >保存
                 </a-button>
               </div>
@@ -124,9 +140,10 @@
           :columns="urgencyColumns"
           :dataSource="urgencyList"
           :loading="loadingUrgency"
+          :scroll="{ y: 400 }"
           :pagination="{
             total: urgencyPageForm.total,
-            current: urgencyPageForm.offset,
+            current: urgencyPageForm.page,
             pageSize: urgencyPageForm.limit,
             showTotal: (total: number) => `共${total}条记录`,
             showSizeChanger: true,
@@ -155,7 +172,7 @@ import { ref, onMounted, watch } from 'vue'
 import useList from '@/hooks/useList'
 import * as echarts from 'echarts'
 import { useRequest } from 'vue-request'
-import { Modal, type TableProps } from 'ant-design-vue'
+import { message, Modal, type TableProps } from 'ant-design-vue'
 import insertChart from '@/assets/svgs/insert_chart.svg'
 import { Shipment_Types, Order_Status_Types, Product_Types, Logistics_Company } from '../baseData'
 import { findLabelByValue, getImgUrlByUrl } from '@/utils/common'
@@ -290,12 +307,12 @@ const {
   },
   () => {
     console.log('订单列表', urgencyList.value)
-  },
+  }
 )
 const urgencyTableChange: TableProps<any>['onChange'] = (pagination) => {
   urgencyPageForm.limit = pagination.pageSize || 10
   getUrgencyDataList({
-    offset: pagination.current,
+    pages: pagination.current,
   })
 }
 // 表格数据
@@ -307,22 +324,25 @@ const {
 } = useList(
   orderApi.waitOuteOrders,
   {
-    offset: 5,
-    order_number: undefined,
-    start_date: undefined,
-    end_date: undefined,
-    status: undefined,
+    search: undefined,
+    outbound_type: undefined,
+    limit: 9999
   },
   () => {
     console.log('订单列表222', waiteOutList.value)
-  },
+  }
 )
 const waiteOutTableChange: TableProps<any>['onChange'] = (pagination) => {
   waiteOutPageForm.limit = pagination.pageSize || 10
   getwaiteOutDataList({
-    offset: pagination.current,
+    pages: pagination.current,
   })
 }
+
+const handleSearch = () => {
+  getwaiteOutDataList({ ...waiteOutPageForm, page: 1 })
+}
+
 const showBarChart = (logisticsStatic: any) => {
   const keyArr = Logistics_Company.map((item) => item.value)
   console.log('物流统计', logisticsStatic, keyArr)
@@ -341,6 +361,22 @@ const getLogisticsStatistics = async () => {
   showBarChart(res.data)
 }
 
+// 修改车牌号
+const updateCarNum = ref()
+const saveCarNum = async (record: any) => {
+  // 调用修改车牌号的接口
+  let res = await orderApi.licensePlateUpdate(record.order_number, {
+    license_plate: updateCarNum.value,
+  })
+  console.log('修改车牌号响应', res)
+
+  if (res) {
+    message.success('修改车牌号成功')
+    getwaiteOutDataList()
+  }
+  record.editCarNum = false
+}
+
 watch(
   () => userStore.sseMassageData, // 监听 state.value
   (newValue: any, oldValue) => {
@@ -355,7 +391,7 @@ watch(
       getLogisticsStatistics()
     }
     console.log('sse数据改变', newValue)
-  },
+  }
 )
 
 onMounted(async () => {
@@ -373,12 +409,10 @@ onMounted(async () => {
 
     console.log('对应的物流公司', Logistics_Company[index])
     router.replace('/order/outbound-statistics')
-    // 你可以在这里进行相应的操作，比如弹出一个对话框，展示详情等
-    // alert('你点击了类别：' + category + '，对应的销量是：' + value + index)
   })
 
   // 获取订单数量统计
-  waiteOutPageForm.offset = 5
+  // waiteOutPageForm.offset = 5
   Promise.all([
     runStatusStatistics(),
     getUrgencyDataList(),

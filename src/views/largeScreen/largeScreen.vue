@@ -56,7 +56,8 @@
             <SvgIcon name="align-item-left-fill" className="title-icon" />
             <span class="title-text">物流统计</span>
             <a-date-picker
-              v-model:value="value1"
+              v-model:value="logisticsTime"
+              @change="getLogisticsStatistics"
               class="date-picker"
               :disabled-date="disabledDate"
             />
@@ -68,8 +69,9 @@
             <SvgIcon name="pie_chart" className="title-icon" />
             <span class="title-text">订单状态占比</span>
             <a-date-picker
-              v-model:value="value1"
+              v-model:value="ordersTime"
               class="date-picker"
+              @change="getStatusStatistics"
               :disabled-date="disabledDate"
             />
           </div>
@@ -149,7 +151,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useRequest } from 'vue-request'
 import dayjs from 'dayjs'
@@ -170,7 +172,8 @@ const openTimeInterval = () => {
     currentTime.value = dayjs()
   }, 1000)
 }
-const value1 = ref<Dayjs>(dayjs())
+const logisticsTime = ref<Dayjs>(dayjs())
+const ordersTime = ref<Dayjs>(dayjs())
 const weekMap = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
 // 订单滚动逻辑
 const carouselRef = ref<HTMLDivElement | null>(null) // 获取 DOM 节点
@@ -409,23 +412,31 @@ const getSelfPickupOrder = async () => {
 }
 
 const getStatusStatistics = async () => {
-  const res = await orderApi.statusStatistics()
+  const params = {
+    query_date: ordersTime.value ? ordersTime.value.format('YYYY-MM-DD') : undefined,
+  }
+  const res = await orderApi.statusStatistics(params)
   showPieChart(res.data)
 }
 const getLogisticsStatistics = async () => {
-  const res = await orderApi.logisticsStatistics()
+  console.log('66');
+
+  const params = {
+    query_date: logisticsTime.value? logisticsTime.value.format('YYYY-MM-DD') : undefined
+  }
+  const res = await orderApi.logisticsStatistics(params)
   showBarChart(res.data)
 }
 // 获取加急订单列表
 const urgncyDataList = ref()
 const getUrgencyDataList = async () => {
-  const res = await orderApi.urgentOrders()
+  const res = await orderApi.urgentOrders({limit: 9999, page: 1})
   urgncyDataList.value = res.data.data_list
 }
 // 获取正常订单列表
 const normalOrderList = ref()
 const getNormalDataList = async () => {
-  const res = await orderApi.normalOrders()
+  const res = await orderApi.normalOrders({limit: 9999, page: 1})
   normalOrderList.value = res.data.data_list
 }
 
@@ -463,9 +474,10 @@ onMounted(async () => {
     getUrgencyDataList(),
     getNormalDataList(),
   ])
-
-  openTimeInterval()
-  startCarousel() // 开始滚动
+  nextTick(() => {
+    openTimeInterval()
+    startCarousel() // 开始滚动
+  })
 })
 
 const backToSystem = () => {
@@ -473,6 +485,7 @@ const backToSystem = () => {
 }
 onUnmounted(() => {
   clearInterval(timer)
+  clearInterval(carouselTimer)
   sse.closeLink()
 })
 </script>

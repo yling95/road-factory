@@ -1,36 +1,5 @@
 <template>
   <a-layout class="layout">
-    <!-- <a-layout-header class="header">
-      <div class="left">
-        <img src="@/assets/logo.png" class="logo-img" alt="logo" />
-        <div class="system">
-          <span class="company-name">大路通</span>
-          <span class="system-name">订单管理系统</span>
-        </div>
-      </div>
-      <div class="right">
-        <SvgIcon name="screen-icon" className="screen-icon" @click="gotoLargeScreen" />
-        <a-dropdown placement="bottomRight" v-model:open="popoverOpen">
-          <template #overlay>
-            <a-menu>
-              <a-menu-item @click="handleUpdatePassword">修改密码</a-menu-item>
-              <a-menu-item @click="handleLogout">退出登录</a-menu-item>
-            </a-menu>
-          </template>
-          <div class="person-box">
-            <img
-              class="user-img"
-              src="@/assets/images/common/user.png"
-              v-if="!userStore.userInfo.real_name"
-            />
-            <div class="user-name" v-else>{{ getFirstTwo(userStore.userInfo.real_name) }}</div>
-
-            <SvgIcon name="arrow-down-s-line" v-if="!popoverOpen" className="down-icon" />
-            <SvgIcon name="arrow-up-s-line" v-else className="down-icon" />
-          </div>
-        </a-dropdown>
-      </div>
-    </a-layout-header> -->
     <headerBar></headerBar>
     <a-layout>
       <left-menu />

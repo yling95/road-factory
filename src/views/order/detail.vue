@@ -60,7 +60,7 @@
             <span class="value">{{
               orderDetail.outbound_plan_time
                 ? dayjs(orderDetail.outbound_plan_time).format('YYYY-MM-DD')
-                : ''
+                : '无'
             }}</span>
           </div>
           <div class="detial-item wrap-2">
@@ -97,7 +97,7 @@
           <div class="detial-item wrap-2">
             <span class="label">出库仓：</span>
             <span class="value">{{
-              orderDetail.delivery_info.details?.warehouse
+              orderDetail.delivery_info?.details?.warehouse
                 ? findLabelByValue(Store_Base, orderDetail.delivery_info.details?.warehouse)
                 : '无'
             }}</span>
@@ -117,27 +117,27 @@
                     <span>{{
                       findLabelByValue(
                         Logistics_Company,
-                        orderDetail.delivery_info.details.logistics_company,
+                        orderDetail.delivery_info.details?.logistics_company
                       )
                     }}</span>
                   </div>
                   <div class="title">
                     <span class="label">收货地址:</span>
-                    <span>{{ orderDetail.delivery_info.details.delivery_address }}</span>
+                    <span>{{ orderDetail.delivery_info.details?.delivery_address }}</span>
                   </div>
                   <div class="title">
                     <span class="label">收货人:</span>
                     <span
-                      >{{ orderDetail.delivery_info.details.recipient_name }}（{{
-                        orderDetail.delivery_info.details.recipient_phone
+                      >{{ orderDetail.delivery_info.details?.recipient_name }}（{{
+                        orderDetail.delivery_info.details?.recipient_phone
                       }}）</span
                     >
                   </div>
                   <div class="title">
                     <span class="label">发货人:</span>
                     <span
-                      >{{ orderDetail.delivery_info.details.sender_name }}（{{
-                        orderDetail.delivery_info.details.sender_phone
+                      >{{ orderDetail.delivery_info.details?.sender_name }}（{{
+                        orderDetail.delivery_info.details?.sender_phone
                       }}）</span
                     >
                   </div>
@@ -209,6 +209,8 @@ import {
   Logistics_Company,
 } from '@/views/baseData'
 import dayjs, { Dayjs } from 'dayjs'
+import { isImage, isVideo } from '@/utils'
+
 const route = useRoute()
 const orderNum = route.params.id as string | number
 const { loading: loadingDtail, data: detailData, runAsync: runDetail } = useRequest(orderApi.detail)
@@ -231,17 +233,6 @@ const orderDetail = ref({
   delivery_info: {}, // 收货信息
 })
 
-// 判断是否是图片
-const isImage = (url: string) => {
-  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg']
-  return imageExtensions.some((ext) => url.toLowerCase().endsWith(ext))
-}
-// 判断是否是视频
-const isVideo = (url: string) => {
-  const videoExtensions = ['.mp4', '.avi', '.mov', '.webm']
-  return videoExtensions.some((ext) => url.toLowerCase().endsWith(ext))
-}
-
 onMounted(async () => {
   const flowRes = await runFlow(orderNum)
   const detailRes = await runDetail(orderNum)
@@ -250,7 +241,9 @@ onMounted(async () => {
     const operateText = findLabelByValue(Operate_types, item.operation)
     console.log('操作---', operateText)
 
-    const title = `${operateText}${(item.remarks ?? '') ? `--(备注：${item.remarks})` : ''}【${item.creator_name}】`
+    const title = `${operateText}${item.remarks ?? '' ? `--(备注：${item.remarks})` : ''}【${
+      item.creator_name
+    }】`
     const flowItem = {
       title,
       description: dayjs(item.create_time).format('YYYY-MM-DD HH:mm:ss'),
