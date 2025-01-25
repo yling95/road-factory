@@ -41,6 +41,7 @@
           :columns="columns"
           :loading="loading"
           :dataSource="dataList"
+          :scroll="{ x: 'max-content' }"
           :pagination="{
             total: pageForm.total,
             current: pageForm.page,

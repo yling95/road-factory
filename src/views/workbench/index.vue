@@ -128,7 +128,21 @@
             </template>
           </a-table>
         </div>
-        <div class="left-bottom" ref="chartExpressageRef">物流统计</div>
+        <div class="left-bottom">
+          <div class="chart-title">
+            <div class="title-text">
+              <SvgIcon name="insert_chart" class="chart-icon"></SvgIcon>
+              <span class="text">物流统计</span>
+            </div>
+            <a-date-picker
+              v-model:value="logisticsTime"
+              @change="getLogisticsStatistics"
+              class="date-picker"
+              :disabled-date="disabledDate"
+            />
+          </div>
+          <div ref="chartExpressageRef" class="chart-box"></div>
+        </div>
       </div>
       <div class="right">
         <div class="title">
@@ -179,34 +193,22 @@ import { findLabelByValue, getImgUrlByUrl } from '@/utils/common'
 import { orderApi } from '@/services/api'
 import router from '@/router'
 import { useUserStore } from '@/stores/user'
+import dayjs from 'dayjs'
+import type { Dayjs } from 'dayjs'
 const chartExpressageRef = ref<HTMLDivElement | null>(null)
 
 const userStore = useUserStore()
+const logisticsTime = ref<Dayjs | undefined>()
+// 禁用今天之后的日期
+const disabledDate = (current: any) => {
+  return current && dayjs(current).isAfter(dayjs().startOf('day'))
+}
 
 // 设置图表的配置项
 const optionInsertValue = ref()
 const optionInsert: echarts.EChartsOption = {
   color: ['#FF9E64'], // 全局颜色设置
-  title: {
-    text: '{icon|} 物流统计',
-    left: 'left',
-    textStyle: {
-      rich: {
-        icon: {
-          backgroundColor: {
-            image: insertChart, // 替换为实际图片路径
-          },
-          width: 24, // 图片宽度
-          height: 24, // 图片高度
-        },
-        title: {
-          color: '#fff', // 标题颜色
-          fontSize: 20, // 标题字体大小
-          fontWeight: 'bold', // 标题字体粗细
-        },
-      },
-    },
-  },
+  title: undefined,
   xAxis: {
     type: 'category',
     data: Logistics_Company.map((item) => item.label),
@@ -326,7 +328,7 @@ const {
   {
     search: undefined,
     outbound_type: undefined,
-    limit: 9999
+    limit: 9999,
   },
   () => {
     console.log('订单列表222', waiteOutList.value)
@@ -335,7 +337,7 @@ const {
 const waiteOutTableChange: TableProps<any>['onChange'] = (pagination) => {
   waiteOutPageForm.limit = pagination.pageSize || 10
   getwaiteOutDataList({
-    pages: pagination.current,
+    page: pagination.current,
   })
 }
 
@@ -357,7 +359,12 @@ const showBarChart = (logisticsStatic: any) => {
   console.log('result', optionInsert)
 }
 const getLogisticsStatistics = async () => {
-  const res = await orderApi.logisticsStatistics()
+  console.log('-----');
+
+  const params = {
+    query_date: logisticsTime.value ? logisticsTime.value.format('YYYY-MM-DD') : undefined,
+  }
+  const res = await orderApi.logisticsStatistics(params)
   showBarChart(res.data)
 }
 
@@ -408,7 +415,10 @@ onMounted(async () => {
     const category = params.name // 对应的类别（x轴数据）
 
     console.log('对应的物流公司', Logistics_Company[index])
-    router.replace('/order/outbound-statistics')
+    sessionStorage.setItem('Logistics_Company', Logistics_Company[index].value);
+    router.push({
+      path: '/order/outbound-statistics'
+    })
   })
 
   // 获取订单数量统计
@@ -487,10 +497,9 @@ onMounted(async () => {
   }
   .content-statistics {
     display: flex;
-    width: calc(90% - 32px);
     align-items: stretch; /* 确保子元素高度一致 */
     .left {
-      width: 60%;
+      flex: 1;
       flex-shrink: 0;
       .left-top {
         background-color: #fff;
@@ -571,11 +580,36 @@ onMounted(async () => {
         background: #fff;
         padding: 12px 20px;
         border-radius: 12px;
+        .chart-title {
+          display: flex;
+          align-items: center;
+          font-size: 20px;
+          justify-content: space-between;
+          font-weight: bold;
+        }
+
+        .title-text {
+          display: flex;
+          align-items: center;
+          .chart-icon {
+            width: 26px;
+            height: 26px;
+            margin-right: 6px;
+          }
+          .text {
+            line-height: 26px;
+            margin-right: 18px;
+          }
+        }
+
+        .chart-box {
+          width: 100%;
+          height: 306px;
+        }
       }
     }
     .right {
       height: 685px;
-      flex-shrink: 1;
       box-sizing: border-box;
       margin-left: 32px;
       width: calc(100% - 60% - 64px);

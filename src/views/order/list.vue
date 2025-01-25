@@ -53,6 +53,7 @@
             showSizeChanger: true,
             size: 'small',
           }"
+          :scroll="{ x: 'max-content' }"
           :row-selection="{ selectedRowKeys: state.selectedRowKeys, onChange: onSelectChange }"
           :row-key="(record) => record.order_number"
           @change="tableChange"
@@ -102,12 +103,12 @@
                     record.status === 'wait_exec'
                       ? '接受'
                       : record.status === 'in_exec'
-                        ? '制作完成'
-                        : record.status === 'wait_outbound'
-                          ? '出库'
-                          : record.status === 'outbound_done'
-                            ? '上传物流单号'
-                            : ''
+                      ? '制作完成'
+                      : record.status === 'wait_outbound'
+                      ? '出库'
+                      : record.status === 'outbound_done'
+                      ? '上传物流单号'
+                      : ''
                   }}
                 </a-button>
                 <a-button
@@ -261,7 +262,7 @@ const resetSelect = () => {
   state.selectedRowKeys = []
 }
 const { loading: loadingBatchStatus, runAsync: runBatchStatus } = useRequest(
-  orderApi.productBatchStatus,
+  orderApi.productBatchStatus
 )
 const batchUrgency = () => {
   Modal.confirm({
@@ -418,13 +419,13 @@ const { dataList, getDataList, loading, pageForm } = useList(
   },
   () => {
     console.log('订单列表', dataList.value)
-  },
+  }
 )
 const tableChange: TableProps<any>['onChange'] = (pagination) => {
   pageForm.limit = pagination.pageSize || 10
-  console.log('-----',pagination);
+  console.log('-----', pagination)
   pageForm.page = pagination.current
-  console.log('搜索', pageForm);
+  console.log('搜索', pageForm)
 
   getDataList({
     page: pagination.current,
@@ -496,9 +497,7 @@ onMounted(() => {
   z-index: 2;
   border-top: 1px solid @border3;
   background: #fff;
-  box-shadow:
-    0px -3.4px 5.85px 0px rgba(2, 36, 59, 0.03),
-    0px -17px 36px 0px rgba(2, 36, 59, 0.06);
+  box-shadow: 0px -3.4px 5.85px 0px rgba(2, 36, 59, 0.03), 0px -17px 36px 0px rgba(2, 36, 59, 0.06);
   display: flex;
   width: calc(100% + 64px);
   border-radius: 0px 0px 8px 8px;

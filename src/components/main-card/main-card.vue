@@ -116,8 +116,7 @@ onMounted(() => {
       // 减去的 1px 是顶部在页面处于滚动的情况下,出现的borderBottom宽度
       height: calc(100% - var(--header-height));
       width: 100%;
-      // height: calc(100% - 20px);
-      overflow-y: auto;
+      overflow: auto;
       ._container {
         margin: 0 40px;
       }

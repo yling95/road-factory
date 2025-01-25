@@ -2,7 +2,7 @@
   <main-card :title="'出库统计'" :showPageTools="true">
     <!-- 操作区域 -->
     <div class="filter">
-      <div class="filter-item">
+      <!-- <div class="filter-item">
         <a-input
           style="width: 239px"
           placeholder="订单编号/客户名称"
@@ -15,7 +15,7 @@
             <i class="iconfont icon-search-line"></i>
           </template>
         </a-input>
-      </div>
+      </div> -->
       <div class="filter-item">
         <a-select
           style="width: 160px"
@@ -33,7 +33,6 @@
         <a-select
           style="min-width: 160px; max-width: 420px"
           v-model:value="pageForm.logistics_company"
-          mode="multiple"
           placeholder="物流公司"
           :options="Logistics_Company"
           allow-clear
@@ -51,14 +50,32 @@
       :columns="columns"
       class="table"
       :dataSource="dataList"
+      :scroll="{ x: 'max-content' }"
       :loading="loading"
+      :pagination="{
+            total: pageForm.total,
+            current: pageForm.page,
+            pageSize: pageForm.limit,
+            showTotal: (total: number) => `共${total}条记录`,
+            showSizeChanger: true,
+            size: 'small',
+          }"
+      @change="tableChange"
     >
       <template #bodyCell="{ column, record }">
         <div v-if="column.key === 'delivery_verify_time'">
           {{ dayjs(record.delivery_verify_time).format('YYYY-MM-DD HH:mm:ss') }}
         </div>
         <div v-if="column.key === 'delivery_verify_url'">
-          <a-button type="link" v-if="record.delivery_verify_url" @click="preview(record)">查看 </a-button>
+          <a-button type="link" v-if="record.delivery_verify_url" @click="preview(record)"
+            >查看
+          </a-button>
+        </div>
+        <div v-if="column.key === 'product_type'">
+          {{ findLabelByValue(Product_Types, record.product_type) }}
+        </div>
+        <div v-if="column.key === 'outbound_type'">
+          {{ findLabelByValue(Shipment_Types, record.outbound_type) }}
         </div>
       </template>
     </a-table>
@@ -87,13 +104,16 @@
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue'
 import dayjs, { Dayjs } from 'dayjs'
+import { useRoute,useRouter } from 'vue-router'
 import useList from '@/hooks/useList'
-
-import { Shipment_Types, Logistics_Company } from '@/views/baseData'
-import { getImgUrlByUrl } from '@/utils/common'
+import { message, Modal, type TableProps } from 'ant-design-vue'
+import { Shipment_Types, Logistics_Company, Product_Types } from '@/views/baseData'
+import { getImgUrlByUrl, findLabelByValue } from '@/utils/common'
 import { orderApi } from '@/services/api'
 import { isImage, isVideo } from '@/utils/index'
 
+const route = useRoute()
+const router = useRouter()
 // 表格结构
 const columns = ref([
   {
@@ -169,6 +189,9 @@ const { dataList, getDataList, loading, pageForm } = useList(
 // 查询
 const searchTime = ref<RangeValue | undefined>(undefined)
 const handleSearch = () => {
+  if (pageForm.search === '') {
+    pageForm.search = undefined
+  }
   if (searchTime.value) {
     pageForm.start_date = dayjs(searchTime.value?.[0]).startOf('date').format('YYYY-MM-DD')
     pageForm.end_date = dayjs(searchTime.value?.[1]).endOf('date').format('YYYY-MM-DD')
@@ -178,7 +201,16 @@ const handleSearch = () => {
   }
   getDataList({ ...pageForm, page: 1 })
 }
+const tableChange: TableProps<any>['onChange'] = (pagination: any) => {
+  pageForm.limit = pagination.pageSize || 10
+  console.log('-----', pagination)
+  pageForm.page = pagination.current
+  console.log('搜索', pageForm)
 
+  getDataList({
+    page: pagination.current,
+  })
+}
 // 预览出库证明
 const previewVisible = ref(false)
 const previewItem = ref()
@@ -187,6 +219,10 @@ const preview = (item: any) => {
   previewItem.value = item
 }
 onMounted(() => {
+  if (sessionStorage.getItem('Logistics_Company')) {
+    pageForm.logistics_company = sessionStorage.getItem('Logistics_Company')
+  }
+  sessionStorage.removeItem('Logistics_Company')
   getDataList()
 })
 </script>
@@ -200,7 +236,7 @@ onMounted(() => {
 .table {
   padding: 20px 0;
 }
-.preview-content{
+.preview-content {
   display: flex;
   align-content: center;
   padding-top: 32px;
