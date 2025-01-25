@@ -342,6 +342,9 @@ const waiteOutTableChange: TableProps<any>['onChange'] = (pagination) => {
 }
 
 const handleSearch = () => {
+  if(waiteOutPageForm.search === ''){
+    waiteOutPageForm.search = undefined
+  }
   getwaiteOutDataList({ ...waiteOutPageForm, page: 1 })
 }
 
