@@ -33,6 +33,7 @@ export const orderApi = {
   productBatchStatus: (params: any) => axios.post(`/order/batch_status`, params),
   rollback: (orderNum: any) => axios.post(`/order/${orderNum}/rollback`),
   deliveryInfo: (orderNum: any, params: any) => axios.put(`/order/${orderNum}/delivery_info`, params),
+  uploadLogisticsNum: (orderNum: any, params: any) => axios.put(`/order/${orderNum}/logistics_number`, params),
   licensePlateUpdate: (orderNum: any, params: any) => axios.put(`/order/${orderNum}/license_plate`, params),
   outboundVerify: (orderNum: any, params: any) => axios.post(`/order/${orderNum}/outbound_verify`, params),
   delete: (orderNum: string | number) => axios.delete(`/order/${orderNum}`),

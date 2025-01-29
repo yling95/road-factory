@@ -77,6 +77,11 @@
         <div v-if="column.key === 'outbound_type'">
           {{ findLabelByValue(Shipment_Types, record.outbound_type) }}
         </div>
+        <div v-if="column.key === 'logistics_info' && record.outbound_type === 'logistics'">
+          {{ findLabelByValue(Logistics_Company, record.logistics_info.logistics_company) }}({{
+            record.logistics_number
+          }})
+        </div>
       </template>
     </a-table>
   </main-card>
@@ -104,7 +109,7 @@
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue'
 import dayjs, { Dayjs } from 'dayjs'
-import { useRoute,useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import useList from '@/hooks/useList'
 import { message, Modal, type TableProps } from 'ant-design-vue'
 import { Shipment_Types, Logistics_Company, Product_Types } from '@/views/baseData'
@@ -156,8 +161,9 @@ const columns = ref([
   },
   {
     title: '物流信息',
-    dataIndex: 'operation',
-    key: 'operation',
+    dataIndex: 'logistics_info',
+    key: 'logistics_info',
+    ellipsis: true,
     width: 200,
   },
   {

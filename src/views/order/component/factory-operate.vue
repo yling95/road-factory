@@ -7,9 +7,10 @@
       @cancel="handleClose"
       :mask-closable="false"
       :ok-button-props="{
-        loading: formLoading || loadingFinish || loadingOutStore,
+        loading: formLoading || loadingFinish || loadingOutStore || loadingLogisticsNum,
       }"
     >
+      <!-- 接受订单 -->
       <a-form
         v-if="nowOperateType === 'accept'"
         class="accept-modal"
@@ -40,6 +41,7 @@
           />
         </a-form-item>
       </a-form>
+      <!-- 制作完成 -->
       <a-form
         v-if="nowOperateType === 'runEnd'"
         class="accept-modal"
@@ -64,6 +66,7 @@
           </a-upload>
         </a-form-item>
       </a-form>
+      <!-- 出库 -->
       <a-form
         v-if="nowOperateType === 'outStore'"
         class="accept-modal"
@@ -115,6 +118,25 @@
         </a-form-item>
         <a-form-item label="备注" name="remarks">
           <a-textarea placeholder="备注" v-model:value="outStoreForm.remarks"></a-textarea>
+        </a-form-item>
+      </a-form>
+      <!-- 上传物流单号 -->
+      <a-form
+        v-if="nowOperateType === 'uploadFlow'"
+        class="accept-modal"
+        :model="logisticsNumForm"
+        ref="logisticsNumFormRef"
+      >
+        <a-form-item
+          label="物流单号"
+          name="logisticsNum"
+          :rules="[{ required: true, message: '请输入物流单号' }]"
+        >
+          <a-input
+            placeholder="请输入物流单号"
+            v-model:value="logisticsNumForm.logisticsNum"
+            :maxlength="32"
+          ></a-input>
         </a-form-item>
       </a-form>
     </a-modal>
@@ -275,6 +297,11 @@ const handleOk = () => {
         submitOutStore()
       })
       break
+    case 'uploadFlow':
+      logisticsNumFormRef.value.validate().then(() => {
+        uploadLogisticsNum()
+      })
+      break
 
     default:
       break
@@ -304,6 +331,23 @@ const submitFinish = async () => {
   }
 }
 
+// 上传物流单号
+const logisticsNumFormRef = ref()
+const logisticsNumForm = reactive({
+  logisticsNum: '',
+})
+
+const { loading: loadingLogisticsNum, runAsync: runUploadLogisticsNum } = useRequest(orderApi.uploadLogisticsNum)
+const uploadLogisticsNum = async () => {
+  const params = {logistics_number: logisticsNumForm.logisticsNum}
+  const res = await runUploadLogisticsNum(nowOperateOrder.value.order_number, params)
+  console.log('上传物流单号', res)
+  if (res.code === 0) {
+    message.success('物流单号上传成功')
+    emits('getList')
+    handleClose()
+  }
+}
 // TODO:订单出库
 // 打印物流单
 const logisticPrintRef = ref()
@@ -381,7 +425,10 @@ const openModal = async (type: factoryOperateTypes, item: any) => {
       modalTitle.value = `订单出库（${item.order_number}）`
       modalOpen.value = true
       break
-
+    case 'uploadFlow':
+      modalTitle.value = `上传物流单号（${item.order_number}）`
+      modalOpen.value = true
+      break
     default:
       break
   }
