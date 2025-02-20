@@ -29,18 +29,19 @@ import { useUserStore } from '@/stores/user'
 import { Modal } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
 import { onUnmounted } from 'vue'
+import type { UserType } from '../views/order/Types'
 
 const router = useRouter()
 // 角色对操作权限判断
 const userStore = useUserStore()
-const nowUserType: any = userStore.userInfo.role
-const isSalesManage = nowUserType !== 'factory'
-const isfactoryManage = nowUserType !== 'sales'
+const nowUserType: UserType = userStore.userInfo.role
+
+const isSalesManage = nowUserType === 'salesman'
+const isfactoryManage = nowUserType === 'factory'
 
 // SSE
 const sse = new SSE({
   messageCb: (message: any) => {
-    console.log('SSE====', message)
     userStore.updateSseMassageData(message)
     if (message.operation === 'create_order' && isfactoryManage) {
       Modal.confirm({
@@ -58,20 +59,6 @@ const sse = new SSE({
         },
       })
     }
-
-    // if (code === -3) {
-    //   code3(text)
-    // } else if (code === -7) {
-    //   code7(text)
-    // } else if (code === -16) {
-    //   code16()
-    // } else if (code === 1) {
-    //   message.success(text)
-    // } else if (code === -22) {
-    //   message.error(text)
-    // } else if (code === -23) {
-    //   message.error(text)
-    // }
   },
 })
 // 建立连接

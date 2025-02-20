@@ -150,7 +150,6 @@ import type { UploadProps } from 'ant-design-vue'
 import type { RuleObject } from 'ant-design-vue/es/form/interface'
 import { message, Modal } from 'ant-design-vue'
 import type { UploadRequestOption } from 'ant-design-vue/es/vc-upload/interface'
-import type { FileType } from 'ant-design-vue/es/upload/interface'
 import { getImgUrlByUrl } from '@/utils/common'
 
 const router = useRouter()
@@ -167,8 +166,22 @@ const formState = reactive({
 const fileList = ref<UploadProps['fileList']>([])
 
 const formRules = ref<{ [key: string]: RuleObject[] }>({
-  order_number: [{ required: true, message: '请输入订单编号', trigger: 'blur' }],
-  customer_name: [{ required: true, message: '请输入客户名称', trigger: 'blur' }],
+  order_number: [
+    { required: true, message: '请输入订单编号', trigger: 'blur' },
+    {
+      min: 3,
+      message: '订单编号至少为 3 位',
+      trigger: 'blur',
+    },
+  ],
+  customer_name: [
+    { required: true, message: '请输入客户名称', trigger: 'blur' },
+    {
+      min: 2,
+      message: '客户名称至少为 2 位',
+      trigger: 'blur',
+    },
+  ],
   product_type: [{ required: true, message: '请选择订单类型', trigger: 'blur' }],
   sample_img_url: [{ required: true, message: '请上传产品图', trigger: 'blur' }],
 })

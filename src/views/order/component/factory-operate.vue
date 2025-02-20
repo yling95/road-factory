@@ -53,7 +53,7 @@
           <a-upload
             @preview="handlePreview"
             :file-list="fileList"
-            :maxCount="5"
+            :maxCount="1"
             @remove="removeFile"
             accept="image/*,video/*"
             :customRequest="customRequest"
@@ -79,7 +79,9 @@
         </a-form-item>
 
         <a-form-item label="收货信息">
-          <span v-if="detailData.outbound_type === 'self_pickup'">川A12121</span>
+          <span v-if="detailData.outbound_type === 'self_pickup'">{{
+            detailData?.delivery_info.details.license_plate
+          }}</span>
           <a-button
             v-if="detailData.outbound_type === 'logistics'"
             @click="previewPrint"
@@ -155,18 +157,16 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, defineExpose, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, defineExpose, onMounted } from 'vue'
 import { type factoryOperateTypes } from '../Types'
 import { useRequest } from 'vue-request'
-import type { UploadProps } from 'ant-design-vue'
-import dayjs, { Dayjs } from 'dayjs'
+import dayjs from 'dayjs'
 import axios from 'axios'
 import { orderApi, commonApi } from '@/services/api'
-import { message, Modal } from 'ant-design-vue'
+import { message } from 'ant-design-vue'
 import { findLabelByValue, getImgUrlByUrl } from '@/utils/common'
 import type { UploadRequestOption } from 'ant-design-vue/es/vc-upload/interface'
-import { Logistics_Company, Shipment_Types, Store_Base } from '@/views/baseData'
-import html2canvas from 'html2canvas'
+import { Shipment_Types } from '@/views/baseData'
 import logisticPrint from './logistic-print.vue'
 
 const emits = defineEmits(['getList'])
@@ -206,7 +206,7 @@ const handleBeforeUpload = (file: any) => {
       message.error('只支持上传图片')
       return reject('仅支持上传图片、视频')
     }
-    fileList.value = [...(fileList.value || []), file]
+    fileList.value = [file]
     resolve(file) // Allow upload
   })
 }
@@ -259,12 +259,12 @@ const customRequest = async (options: UploadRequestOption) => {
     }
   }
 }
-const removeFile = (file: any) => {
+const removeFile = () => {
   fileList.value = []
   finishForm.effect_url = undefined
   outStoreForm.url = undefined
 }
-const handlePreview = async (file: UploadProps['fileList'][number]) => {
+const handlePreview = async (file: any) => {
   if (file.url) {
     previewImage.value = file.url
   } else {
@@ -337,9 +337,11 @@ const logisticsNumForm = reactive({
   logisticsNum: '',
 })
 
-const { loading: loadingLogisticsNum, runAsync: runUploadLogisticsNum } = useRequest(orderApi.uploadLogisticsNum)
+const { loading: loadingLogisticsNum, runAsync: runUploadLogisticsNum } = useRequest(
+  orderApi.uploadLogisticsNum,
+)
 const uploadLogisticsNum = async () => {
-  const params = {logistics_number: logisticsNumForm.logisticsNum}
+  const params = { logistics_number: logisticsNumForm.logisticsNum }
   const res = await runUploadLogisticsNum(nowOperateOrder.value.order_number, params)
   console.log('上传物流单号', res)
   if (res.code === 0) {
@@ -380,6 +382,7 @@ const handleClose = () => {
     default:
       break
   }
+  fileList.value = []
   modalTitle.value = ''
   modalOpen.value = false
 }

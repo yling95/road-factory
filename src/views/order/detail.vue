@@ -109,7 +109,7 @@
               <div class="shouhuo" v-if="orderDetail.delivery_info">
                 <div class="title" v-if="orderDetail.outbound_type === 'self_pickup'">
                   <span class="label">车牌号:</span>
-                  <span>12333</span>
+                  <span>{{ orderDetail?.delivery_info.details.license_plate }}</span>
                 </div>
                 <div v-if="orderDetail.outbound_type === 'logistics'">
                   <div class="title">
@@ -117,7 +117,7 @@
                     <span>{{
                       findLabelByValue(
                         Logistics_Company,
-                        orderDetail.delivery_info.details?.logistics_company
+                        orderDetail.delivery_info.details?.logistics_company,
                       )
                     }}</span>
                   </div>
@@ -241,7 +241,7 @@ onMounted(async () => {
     const operateText = findLabelByValue(Operate_types, item.operation)
     console.log('操作---', operateText)
 
-    const title = `${operateText}${item.remarks ?? '' ? `--(备注：${item.remarks})` : ''}【${
+    const title = `${operateText}${(item.remarks ?? '') ? `--(备注：${item.remarks})` : ''}【${
       item.creator_name
     }】`
     const flowItem = {

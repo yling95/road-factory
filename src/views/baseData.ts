@@ -56,6 +56,7 @@ export const Operate_types = [
   { label: '订单制作完成', value: 'production_done' },
   { label: '上传订单交付信息', value: 'upload_delivery' },
   { label: '订单出库确认', value: 'outbound_verify' },
+  { label: '上传物流单号', value: 'upload_logistics' },
   { label: '修改订单', value: 'modify_order' },
   { label: '回退订单', value: 'rollback_order' },
   { label: '删除订单', value: 'delete_order' }

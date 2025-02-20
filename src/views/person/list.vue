@@ -50,6 +50,7 @@
             showSizeChanger: true,
             size: 'small',
           }"
+          @change="tableChange"
         >
           <template #bodyCell="{ column, record }">
             <div v-if="column.key === 'operation'">
@@ -108,7 +109,7 @@ import useList from '@/hooks/useList'
 import type { RuleObject } from 'ant-design-vue/es/form/interface'
 import { userApi } from '@/services/api'
 import { Person_Types } from '../baseData'
-import { message, Modal } from 'ant-design-vue'
+import { message, Modal, type TableProps } from 'ant-design-vue'
 import { findLabelByValue } from '@/utils/common'
 
 interface userType {
@@ -272,6 +273,13 @@ const handUserOperate = async (type: 'delete' | 'resetPwd', item: any) => {
   }
 }
 
+const tableChange: TableProps<any>['onChange'] = (pagination) => {
+  pageForm.limit = pagination.pageSize || 10
+  pageForm.page = pagination.current as number
+  getDataList({
+    page: pagination.current,
+  })
+}
 // 查询
 const handleSearch = () => {
   if (pageForm.search === '') {

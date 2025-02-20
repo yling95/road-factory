@@ -49,31 +49,3 @@ export const orderApi = {
   selfPickupOrders: () => axios.get(`/order/self_pickup_orders`), // 自提订单
   getLogisticsPrinNum: (orderNum: string | number) => axios.get(`/order/${orderNum}/logistics_print_num`) // 获取物流打印编号
 }
-
-export const localConversionApi = {
-  getList: (params: any) => axios.get('/ai/local-data-convert/jobs', { params }), //分页查询
-  startTask: (id: number) => axios.get('/ai/local-data-convert/job/start', { params: { jobId: id } }), //根据任务id开始任务
-  stopTask: (id: number) => axios.put('/ai/local-data-convert/job/stop', null, { params: { jobId: id } }), //终止任务
-  createTask: (params: any) => axios.post('/ai/local-data-convert/job', params), //创建任务
-  deleteTask: (id: number) => axios.delete(`/ai/local-data-convert/job`, { params: { jobId: id } }), //根据任务id删除任务
-  getDetail: (params: any) => axios.get(`/ai/local-data-convert/job/results`, { params }), //查询任务本地数据转换详情
-
-  deleteFile: (id: string, fileName?: string) =>
-    axios.delete(`/ai/local-data-convert/job/src`, { params: { dataSrcId: id, srcFileName: fileName } }),
-  uploadFile: (dataSrcId: string, file: FormData, config?: AxiosRequestConfig<any> | undefined) =>
-    axios.post('/ai/local-data-convert/upload', file, {
-      params: { dataSrcId },
-      timeout: 1000 * 60 * 30,
-      headers: { 'Content-Type': 'multipart/form-data', cancelable: false },
-      ...config,
-    }),
-
-  // 导出准备
-  exportPrepare: (params: any) => axios.post('/dataConvertExport/exportPrepare', params),
-  // 列表查询
-  getExportList: (params: any) => axios.get('/dataConvertExport/list', { params }),
-  //批量删除导出任务
-  deleteExport: (params: any) => axios.delete(`/dataConvertExport/deleteBatchByIds`, { params }),
-  //下载
-  downloadExport: (params: any) => axios.get('/dataConvertExport/download', { params }),
-}

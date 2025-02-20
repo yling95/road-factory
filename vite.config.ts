@@ -73,31 +73,7 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
           target: target,
           changeOrigin: true,
           ws: true,
-        },
-        '/datas': {
-          target: target,
-          changeOrigin: true,
-          ws: true,
-        },
-        // rewrite: (path: string) => path.replace(/^\/api/, ''),
-        // '/api/': {
-        //   target: 'http://192.168.7.226',
-        //   changeOrigin: true,
-        //   ws: true,
-        //   rewrite: (path: string) => path.replace(/^\/api/, '/edgebox'),
-        // },
-        // '/v1/edgebox': {
-        //   target: ':60666/',
-        //   changeOrigin: true,
-        //   ws: true,
-        //   // rewrite: (path: string) => path.replace(/^\/localhost:60666/, 'edgebox'),
-        // },
-        '/live': {
-          target: 'rtmp://192.168.7.251:1935',
-          changeOrigin: true,
-          ws: true,
-          rewrite: (path: string) => path.replace(/^\/live/, ''),
-        },
+        }
       },
     },
   }

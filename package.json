@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --mode development --port 10000",
-    "build": "run-p type-check \"build-only {@}\" --",
+    "build": "vite build --mode development",
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",

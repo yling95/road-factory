@@ -13,6 +13,7 @@ export const routes: Array<RouteRecordRaw> = [
         path: '/workbench',
         meta: {
           title: '工作台',
+          menubar: '/workbench'
         },
         component: () => import('@/views/workbench/index.vue'),
       },
@@ -20,6 +21,7 @@ export const routes: Array<RouteRecordRaw> = [
         path: '/order/list',
         meta: {
           title: '订单列表',
+          menubar: '/order/list'
         },
         component: () => import('@/views/order/list.vue'),
       },
@@ -27,6 +29,7 @@ export const routes: Array<RouteRecordRaw> = [
         path: '/order/add',
         meta: {
           title: '创建订单',
+          menubar: '/order/list'
         },
         component: () => import('@/views/order/form-order.vue'),
       },
@@ -34,6 +37,7 @@ export const routes: Array<RouteRecordRaw> = [
         path: '/order/edit',
         meta: {
           title: '编辑订单',
+          menubar: '/order/list'
         },
         component: () => import('@/views/order/form-order.vue'),
       },
@@ -41,6 +45,7 @@ export const routes: Array<RouteRecordRaw> = [
         path: '/order/detail/:id',
         meta: {
           title: '订单详情',
+          menubar: '/order/list'
         },
         component: () => import('@/views/order/detail.vue'),
       },
@@ -48,6 +53,7 @@ export const routes: Array<RouteRecordRaw> = [
         path: '/order/outbound-statistics',
         meta: {
           title: '出库统计',
+          menubar: '/order/outbound-statistics'
         },
         component: () => import('@/views/order/outbound-statistics.vue'),
       },
@@ -55,6 +61,7 @@ export const routes: Array<RouteRecordRaw> = [
         path: '/person/list',
         meta: {
           title: '人员列表',
+          menubar: '/person/list'
         },
         component: () => import('@/views/person/list.vue'),
       },
@@ -67,7 +74,7 @@ export const routes: Array<RouteRecordRaw> = [
   {
     path: '/login',
     meta: {
-      title: '人员列表',
+      title: '登录',
       noAuth: true,
     },
     component: () => import('@/views/login/login.vue')

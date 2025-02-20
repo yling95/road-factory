@@ -1,7 +1,9 @@
 <template>
   <main-card :title="'订单列表'" :showPageTools="true">
     <template #Slot-Tools-Right>
-      <a-button type="primary" class="creat-btn" @click="handleToForm('add')">创建订单</a-button>
+      <a-button type="primary" class="creat-btn" @click="handleToForm('add')" v-if="isSalesManage"
+        >创建订单</a-button
+      >
     </template>
     <div class="order-list">
       <!-- 筛选 -->
@@ -85,6 +87,7 @@
               >
                 继续
               </a-button>
+
               <div v-else class="table-operation">
                 <a-button
                   type="link"
@@ -103,12 +106,12 @@
                     record.status === 'wait_exec'
                       ? '接受'
                       : record.status === 'in_exec'
-                      ? '制作完成'
-                      : record.status === 'wait_outbound'
-                      ? '出库'
-                      : record.status === 'outbound_done'
-                      ? '上传物流单号'
-                      : ''
+                        ? '制作完成'
+                        : record.status === 'wait_outbound'
+                          ? '出库'
+                          : record.status === 'outbound_done'
+                            ? '上传物流单号'
+                            : ''
                   }}
                 </a-button>
                 <a-button
@@ -236,7 +239,7 @@ const router = useRouter()
 // 角色对操作权限判断
 const nowUserType: UserType = userStore.userInfo.role
 const isSalesManage = nowUserType !== 'factory'
-const isfactoryManage = nowUserType !== 'sales'
+const isfactoryManage = nowUserType !== 'salesman'
 
 const factoryOperateRef = ref()
 const salesOperateRef = ref()
@@ -262,7 +265,7 @@ const resetSelect = () => {
   state.selectedRowKeys = []
 }
 const { loading: loadingBatchStatus, runAsync: runBatchStatus } = useRequest(
-  orderApi.productBatchStatus
+  orderApi.productBatchStatus,
 )
 const batchUrgency = () => {
   Modal.confirm({
@@ -419,12 +422,12 @@ const { dataList, getDataList, loading, pageForm } = useList(
   },
   () => {
     console.log('订单列表', dataList.value)
-  }
+  },
 )
 const tableChange: TableProps<any>['onChange'] = (pagination) => {
   pageForm.limit = pagination.pageSize || 10
   console.log('-----', pagination)
-  pageForm.page = pagination.current
+  pageForm.page = pagination.current as number
   console.log('搜索', pageForm)
 
   getDataList({
@@ -497,7 +500,9 @@ onMounted(() => {
   z-index: 2;
   border-top: 1px solid @border3;
   background: #fff;
-  box-shadow: 0px -3.4px 5.85px 0px rgba(2, 36, 59, 0.03), 0px -17px 36px 0px rgba(2, 36, 59, 0.06);
+  box-shadow:
+    0px -3.4px 5.85px 0px rgba(2, 36, 59, 0.03),
+    0px -17px 36px 0px rgba(2, 36, 59, 0.06);
   display: flex;
   width: calc(100% + 64px);
   border-radius: 0px 0px 8px 8px;

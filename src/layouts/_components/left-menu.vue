@@ -79,7 +79,7 @@ const getShortPath = (path = '', length = 2) => {
 const current = ref<string[]>([getShortPath(route.path, 2)])
 
 onBeforeRouteUpdate((to) => {
-  current.value = [to.fullPath]
+  current.value = [to.meta.menubar as string]
 })
 
 // 监听窗口变化,避免频繁调用，开启了防抖
