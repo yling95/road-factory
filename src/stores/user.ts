@@ -31,7 +31,8 @@ export const useUserStore = defineStore('user', {
     },
     updateSseMassageData(value: any) {
       this.sseMassageData = value
-    }
+    },
+
   },
   persist: {
     key: 'user-store',

@@ -1,7 +1,7 @@
 <template>
   <div class="workbench">
     <div class="order-statistics">
-      <div class="statistics">
+      <div class="statistics" @click="gotoOrderList('urgent')">
         <div class="icon-box">
           <SvgIcon name="home (1)" className="home-icon home-icon--urgency" />
         </div>
@@ -10,7 +10,7 @@
           <div class="value">{{ statusStatic?.data.urgent_count }}</div>
         </div>
       </div>
-      <div class="statistics">
+      <div class="statistics" @click="gotoOrderList('wait_exec')">
         <div class="icon-box">
           <SvgIcon name="home (2)" className="home-icon home-icon--accept" />
         </div>
@@ -19,16 +19,7 @@
           <div class="value">{{ statusStatic?.data.wait_exec_count }}</div>
         </div>
       </div>
-      <div class="statistics">
-        <div class="icon-box">
-          <SvgIcon name="home (3)" className="home-icon home-icon--awaitOut" />
-        </div>
-        <div class="text-box">
-          <div class="label">待出库订单</div>
-          <div class="value">{{ statusStatic?.data.wait_outbound_count }}</div>
-        </div>
-      </div>
-      <div class="statistics">
+      <div class="statistics" @click="gotoOrderList('in_exec')">
         <div class="icon-box">
           <SvgIcon name="home (4)" className="home-icon home-icon--execution" />
         </div>
@@ -37,7 +28,16 @@
           <div class="value">{{ statusStatic?.data.in_exec_count }}</div>
         </div>
       </div>
-      <div class="statistics">
+      <div class="statistics" @click="gotoOrderList('wait_outbound')">
+        <div class="icon-box">
+          <SvgIcon name="home (3)" className="home-icon home-icon--awaitOut" />
+        </div>
+        <div class="text-box">
+          <div class="label">待出库订单</div>
+          <div class="value">{{ statusStatic?.data.wait_outbound_count }}</div>
+        </div>
+      </div>
+      <div class="statistics" @click="gotoOrderList('outbound_done')">
         <div class="icon-box">
           <SvgIcon name="home (5)" className="home-icon home-icon--out" />
         </div>
@@ -81,15 +81,15 @@
             :columns="waiteOutColumns"
             :dataSource="waiteOutList"
             :loading="loadingWaiteOut"
-            :scroll="{ y: 160 }"
+            :scroll="{ y: 256 }"
             :pagination="false"
             @change="waiteOutTableChange"
           >
             <template #bodyCell="{ column, record }">
-              <div v-if="column.key === 'product_effect_url'">
+              <div v-if="column.key === 'sample_img_url'">
                 <a-image
-                  :src="getImgUrlByUrl(record.product_effect_url)"
-                  :height="40"
+                  :src="getImgUrlByUrl(record.sample_img_url)"
+                  :height="30"
                   :width="80"
                   class="sample-img"
                   alt=""
@@ -117,13 +117,21 @@
                 <a-button
                   class="edit-btn"
                   type="text"
-                  @click="record.editCarNum = true"
+                  @click="((record.editCarNum = true), (updateCarNum = record.license_plate))"
                   v-if="!record.editCarNum"
                   ><i class="ri-edit-line"></i
                 ></a-button>
-                <a-button class="save-btn" type="primary" @click="saveCarNum(record)" v-else
-                  >保存
-                </a-button>
+                <div v-else style="display: flex">
+                  <a-button class="save-btn" type="primary" @click="saveCarNum(record)"
+                    >保存
+                  </a-button>
+                  <a-button
+                    class="save-btn"
+                    style="margin-left: 2px"
+                    @click="((record.editCarNum = false), (updateCarNum = ''))"
+                    >取消
+                  </a-button>
+                </div>
               </div>
             </template>
           </a-table>
@@ -208,22 +216,51 @@ const disabledDate = (current: any) => {
 const optionInsertValue = ref()
 const optionInsert: echarts.EChartsOption = {
   color: ['#FF9E64'], // 全局颜色设置
-  title: undefined,
+  title: undefined, // 去掉标题
+  grid: {
+    top: 14, // 上边距
+    right: 0, // 右边距
+    bottom: 14, // 增大底部间距
+    left: 30, // 左边距
+    containLabel: true, // 包含坐标轴标签
+  },
   xAxis: {
     type: 'category',
     data: Logistics_Company.map((item) => item.label),
+    axisLabel: {
+      margin: 10, // 去掉 X 轴标签的边距
+    },
+    axisTick: {
+      alignWithLabel: true, // 刻度线与标签对齐
+    },
   },
   yAxis: {
     type: 'value',
+    min: 0, // 设置 Y 轴最小值
+    max: 40, // 设置 Y 轴最大值
+    interval: 5, // 设置 Y 轴刻度间隔
+    axisLabel: {
+      margin: 0, // 去掉 Y 轴标签的边距
+    },
   },
-  // FF9E64
   series: [
     {
       data: [0, 0, 0, 0, 0, 0, 0, 0, 0],
       type: 'bar',
+      label: {
+        show: true, // 显示标签
+        position: 'top', // 标签显示在柱子顶部
+        color: '#000', // 标签颜色
+        fontSize: 12, // 标签字体大小
+        formatter: (params: any) => {
+          // 自定义标签内容
+          return params.value === 0 ? '' : params.value // 如果值为 0，显示空
+        },
+      },
     },
   ],
 }
+
 
 // 表格
 const urgencyColumns = ref([
@@ -262,8 +299,8 @@ const waiteOutColumns = ref([
   },
   {
     title: '产品图片',
-    dataIndex: 'product_effect_url',
-    key: 'product_effect_url',
+    dataIndex: 'sample_img_url',
+    key: 'sample_img_url',
     ellipsis: true,
   },
   {
@@ -287,11 +324,7 @@ const waiteOutColumns = ref([
   },
 ])
 
-const {
-  loading: loadingDtail,
-  data: statusStatic,
-  runAsync: runStatusStatistics,
-} = useRequest(orderApi.statusStatistics)
+const { data: statusStatic, runAsync: runStatusStatistics } = useRequest(orderApi.statusStatistics)
 
 // 表格数据
 const {
@@ -299,22 +332,16 @@ const {
   getDataList: getUrgencyDataList,
   loading: loadingUrgency,
   pageForm: urgencyPageForm,
-} = useList(
-  orderApi.urgentOrders,
-  {
-    order_number: undefined,
-    start_date: undefined,
-    end_date: undefined,
-    status: undefined,
-  },
-  () => {
-    console.log('订单列表', urgencyList.value)
-  }
-)
+} = useList(orderApi.urgentOrders, {
+  order_number: undefined,
+  start_date: undefined,
+  end_date: undefined,
+  status: undefined,
+})
 const urgencyTableChange: TableProps<any>['onChange'] = (pagination) => {
   urgencyPageForm.limit = pagination.pageSize || 10
   getUrgencyDataList({
-    pages: pagination.current,
+    page: pagination.current as number,
   })
 }
 // 表格数据
@@ -323,17 +350,11 @@ const {
   getDataList: getwaiteOutDataList,
   loading: loadingWaiteOut,
   pageForm: waiteOutPageForm,
-} = useList(
-  orderApi.waitOuteOrders,
-  {
-    search: undefined,
-    outbound_type: undefined,
-    limit: 9999,
-  },
-  () => {
-    console.log('订单列表222', waiteOutList.value)
-  }
-)
+} = useList(orderApi.waitOuteOrders, {
+  search: undefined,
+  outbound_type: undefined,
+  limit: 9999,
+})
 const waiteOutTableChange: TableProps<any>['onChange'] = (pagination) => {
   waiteOutPageForm.limit = pagination.pageSize || 10
   getwaiteOutDataList({
@@ -342,7 +363,7 @@ const waiteOutTableChange: TableProps<any>['onChange'] = (pagination) => {
 }
 
 const handleSearch = () => {
-  if(waiteOutPageForm.search === ''){
+  if (waiteOutPageForm.search === '') {
     waiteOutPageForm.search = undefined
   }
   getwaiteOutDataList({ ...waiteOutPageForm, page: 1 })
@@ -362,8 +383,6 @@ const showBarChart = (logisticsStatic: any) => {
   console.log('result', optionInsert)
 }
 const getLogisticsStatistics = async () => {
-  console.log('-----');
-
   const params = {
     query_date: logisticsTime.value ? logisticsTime.value.format('YYYY-MM-DD') : undefined,
   }
@@ -371,15 +390,20 @@ const getLogisticsStatistics = async () => {
   showBarChart(res.data)
 }
 
+const gotoOrderList = (orderType: string) => {
+  sessionStorage.setItem('search_order_type', orderType)
+  router.push({
+    path: '/order/list',
+  })
+}
+
 // 修改车牌号
 const updateCarNum = ref()
 const saveCarNum = async (record: any) => {
   // 调用修改车牌号的接口
-  let res = await orderApi.licensePlateUpdate(record.order_number, {
+  const res = await orderApi.licensePlateUpdate(record.order_number, {
     license_plate: updateCarNum.value,
   })
-  console.log('修改车牌号响应', res)
-
   if (res) {
     message.success('修改车牌号成功')
     getwaiteOutDataList()
@@ -389,7 +413,7 @@ const saveCarNum = async (record: any) => {
 
 watch(
   () => userStore.sseMassageData, // 监听 state.value
-  (newValue: any, oldValue) => {
+  (newValue: any) => {
     runStatusStatistics()
     if (newValue.operation === 'urgent_order') {
       getUrgencyDataList()
@@ -401,7 +425,7 @@ watch(
       getLogisticsStatistics()
     }
     console.log('sse数据改变', newValue)
-  }
+  },
 )
 
 onMounted(async () => {
@@ -414,13 +438,11 @@ onMounted(async () => {
 
     // 获取点击的柱状图的索引和数据
     const index = params.dataIndex // 被点击的柱状图的索引
-    const value = params.data // 被点击的柱状图的数值
-    const category = params.name // 对应的类别（x轴数据）
 
-    console.log('对应的物流公司', Logistics_Company[index])
-    sessionStorage.setItem('Logistics_Company', Logistics_Company[index].value);
+    // 对应的物流公司
+    sessionStorage.setItem('Logistics_Company', Logistics_Company[index].value)
     router.push({
-      path: '/order/outbound-statistics'
+      path: '/order/outbound-statistics',
     })
   })
 
@@ -448,10 +470,14 @@ onMounted(async () => {
       box-sizing: border-box;
       display: flex;
       align-items: center;
+      cursor: pointer;
+      padding-right: 12px;
+      &:hover {
+        border-radius: 16px;
+        box-shadow: 0px 0px 6px 0px rgba(48, 51, 58, 0.15);
+      }
 
       .icon-box {
-        // width: 100px;
-        // height: 100px;
         width: 90px;
         height: 90px;
         background: #fff;
@@ -484,7 +510,8 @@ onMounted(async () => {
 
       .text-box {
         .label {
-          color: @text3;
+          color: @text1;
+          font-weight: 600;
           font-size: 16px;
           line-height: 22px;
         }
@@ -507,7 +534,7 @@ onMounted(async () => {
       .left-top {
         background-color: #fff;
         padding: 19px 24px;
-        height: 305px;
+        height: 405px;
         border-radius: 12px;
         box-sizing: border-box;
         .title {
@@ -579,7 +606,7 @@ onMounted(async () => {
         width: 100%;
         box-sizing: border-box;
         margin-top: 32px;
-        height: 346px;
+        height: 250px;
         background: #fff;
         padding: 12px 20px;
         border-radius: 12px;
@@ -607,7 +634,7 @@ onMounted(async () => {
 
         .chart-box {
           width: 100%;
-          height: 306px;
+          height: 200px;
         }
       }
     }

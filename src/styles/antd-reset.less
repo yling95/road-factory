@@ -705,7 +705,6 @@ div.ant-radio-group {
 @table-row-hover-bg: @mask2;
 @table-border-color: @border3;
 @table-selected-row-bg: @mask1;
-// @table-selected-row-hover-bg: @mask1;
 
 .ant-table-body {
   .ant-table-placeholder {
@@ -719,7 +718,6 @@ div.ant-radio-group {
   border-radius: 6px;
   overflow: hidden;
 }
-
 .ant-table-wrapper .ant-table:not(.ant-table-bordered) .ant-table-tbody > tr:last-child > td {
   border-bottom: none;
 }
@@ -762,11 +760,12 @@ div.ant-radio-group {
       }
     }
   }
+
   .ant-table-thead > tr > th,
   .ant-table-tbody > tr > td,
   .ant-table tfoot > tr > th,
   .ant-table tfoot > tr > td {
-    padding-left: 24px;
+    padding: 10px 16px;
   }
   .ant-table-tbody > tr.ant-table-placeholder:hover > td {
     background-color: transparent;

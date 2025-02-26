@@ -2,20 +2,6 @@
   <main-card :title="'出库统计'" :showPageTools="true">
     <!-- 操作区域 -->
     <div class="filter">
-      <!-- <div class="filter-item">
-        <a-input
-          style="width: 239px"
-          placeholder="订单编号/客户名称"
-          v-model:value="pageForm.search"
-          allowClear
-          @press-enter="handleSearch"
-          @change="!pageForm.search && handleSearch()"
-        >
-          <template #prefix>
-            <i class="iconfont icon-search-line"></i>
-          </template>
-        </a-input>
-      </div> -->
       <div class="filter-item">
         <a-select
           style="width: 160px"

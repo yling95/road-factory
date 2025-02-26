@@ -26,7 +26,9 @@
                 <div class="card-top">
                   <span class="car-num"> {{ item.license_plate }} </span>
                   <span class="order-num"
-                    >{{ item.customer_name }}（{{ item.order_number }}）
+                    >{{ item.customer_name }}（{{
+                      item.order_number.slice(0, 3) + '***' + item.order_number.slice(-2)
+                    }}）
                   </span>
                 </div>
                 <div class="card-content">
@@ -39,8 +41,17 @@
                       <span class="name-val">{{ itemTwo.name }}</span>
                       <span class="numUnit-val">*{{ itemTwo.count }}{{ itemTwo.unit }}</span>
                     </div>
+                    <a-image
+                      v-if="item.sample_img_url"
+                      :src="getImgUrlByUrl(item.sample_img_url)"
+                      :height="50"
+                      width="100%"
+                      class="sample-img"
+                      alt=""
+                    />
                   </div>
                 </div>
+
                 <div class="remark">
                   <div class="remark-label">备注</div>
                   <div class="remark-text">
@@ -151,7 +162,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useRequest } from 'vue-request'
 import dayjs from 'dayjs'
@@ -181,7 +192,7 @@ let carouselTimer: any = null
 const selfPickupOrders = ref<any[]>([]) // 盒子内容
 const startCarousel = () => {
   if (!carouselRef.value) return
-  if (selfPickupOrders.value.length < 3) return
+  if (selfPickupOrders.value.length < 4) return
 
   const boxWidth = carouselRef.value.children[0].clientWidth // 单个盒子的宽度
 
@@ -230,8 +241,12 @@ const optionLogistics: echarts.EChartsOption = {
   },
   xAxis: {
     type: 'value',
+    min: 0, // 设置 Y 轴最小值
+    max: 40, // 设置 Y 轴最大值
+    interval: 5, // 设置 Y 轴刻度间隔
     splitLine: {
       show: true, // 显示网格线
+
       lineStyle: {
         color: 'rgba(24, 24, 24, 0.25)', // 设置网格线颜色
         type: 'solid', // 可选值：'solid' | 'dashed' | 'dotted'
@@ -261,6 +276,16 @@ const optionLogistics: echarts.EChartsOption = {
     {
       data: [120, 200, 150, 80, 70, 110, 130, 110, 130],
       type: 'bar',
+      label: {
+        show: true, // 显示标签
+        position: 'right', // 标签显示在柱子顶部
+        color: '#000', // 标签颜色
+        fontSize: 12, // 标签字体大小
+        formatter: (params: any) => {
+          // 自定义标签内容
+          return params.value === 0 ? '' : params.value // 如果值为 0，显示“无数据”
+        },
+      },
     },
   ],
 }
@@ -419,10 +444,10 @@ const getStatusStatistics = async () => {
   showPieChart(res.data)
 }
 const getLogisticsStatistics = async () => {
-  console.log('66');
+  console.log('66')
 
   const params = {
-    query_date: logisticsTime.value? logisticsTime.value.format('YYYY-MM-DD') : undefined
+    query_date: logisticsTime.value ? logisticsTime.value.format('YYYY-MM-DD') : undefined,
   }
   const res = await orderApi.logisticsStatistics(params)
   showBarChart(res.data)
@@ -430,13 +455,13 @@ const getLogisticsStatistics = async () => {
 // 获取加急订单列表
 const urgncyDataList = ref()
 const getUrgencyDataList = async () => {
-  const res = await orderApi.urgentOrders({limit: 9999, page: 1})
+  const res = await orderApi.urgentOrders({ limit: 9999, page: 1 })
   urgncyDataList.value = res.data.data_list
 }
 // 获取正常订单列表
 const normalOrderList = ref()
 const getNormalDataList = async () => {
-  const res = await orderApi.normalOrders({limit: 9999, page: 1})
+  const res = await orderApi.normalOrders({ limit: 9999, page: 1 })
   normalOrderList.value = res.data.data_list
 }
 
@@ -486,6 +511,7 @@ const backToSystem = () => {
 onUnmounted(() => {
   clearInterval(timer)
   clearInterval(carouselTimer)
+  stopCarousel()
   sse.closeLink()
 })
 </script>
@@ -586,113 +612,6 @@ onUnmounted(() => {
             font-weight: 600;
           }
         }
-        // .order-card {
-        //   display: flex;
-        //   max-width: 880px;
-        //   overflow-x: auto;
-        //   gap: 20px;
-        //   height: 334px;
-        //   box-sizing: border-box;
-        //   .card {
-        //     width: 304px;
-        //     height: 324px;
-        //     box-sizing: border-box;
-        //     background: #fff;
-        //     border-radius: 16px;
-        //     padding: 8px 12px;
-        //   }
-        //   .card-top {
-        //     display: flex;
-        //     padding: 8px 0;
-        //     justify-content: space-between;
-        //     border-bottom: 1px solid @border1;
-        //     margin-bottom: 12px;
-        //     // height: 37px;
-        //     .car-num {
-        //       font-size: 18px;
-        //       font-weight: bold;
-        //     }
-        //     .order-num {
-        //       font-size: 14px;
-        //       color: @text2;
-        //     }
-        //   }
-        //   .card-content {
-        //     height: 200px;
-        //     border-bottom: 1px solid @border1;
-        //     .product-list-title {
-        //       display: flex;
-        //       height: 42px;
-        //       box-sizing: border-box;
-        //       align-items: center;
-        //       justify-content: space-between;
-        //       padding: 7px 0 15px 0;
-
-        //       .name {
-        //         width: 32px;
-        //         height: 26px;
-        //         background: @primary1;
-        //         font-size: 14px;
-        //         padding: 2px;
-        //         text-align: center;
-        //         line-height: 26px;
-        //         display: block;
-        //         color: #fff;
-        //         border-radius: 4px;
-        //       }
-        //       .numUnit {
-        //         font-size: 14px;
-        //         color: @text4;
-        //       }
-        //     }
-        //     .product-list {
-        //       height: 158px;
-        //       overflow-y: auto;
-        //       .product-li {
-        //         display: flex;
-        //         justify-content: space-between;
-        //         color: @text1;
-        //         .name-val {
-        //           max-width: 220px;
-        //           overflow: hidden;
-        //           text-overflow: ellipsis;
-        //           white-space: nowrap;
-        //         }
-        //         margin-bottom: 12px;
-        //       }
-        //     }
-        //   }
-        //   .remark {
-        //     margin-top: 12px;
-        //     display: flex;
-        //     align-items: center;
-        //     height: 26px;
-        //     .remark-label {
-        //       background: #626dd9;
-        //       width: 32px;
-        //       height: 26px;
-        //       padding: 2px;
-        //       color: #fff;
-        //       font-size: 14px;
-        //       text-align: center;
-        //       line-height: 26px;
-        //       border-radius: 4px;
-        //       flex-shrink: 0;
-        //       margin-right: 14px;
-        //     }
-        //     .remark-text {
-        //       font-size: 14px;
-        //       color: @text2;
-        //       width: 300px; /* 设置容器宽度 */
-        //       overflow: hidden; /* 隐藏超出内容 */
-        //       text-overflow: ellipsis; /* 显示省略号 */
-        //       display: -webkit-box; /* 兼容 WebKit 的多行显示方式 */
-        //       -webkit-line-clamp: 2; /* 限制显示两行 */
-        //       -webkit-box-orient: vertical; /* 规定文本垂直布局 */
-        //       word-break: break-word; /* 自动换行 */
-        //     }
-        //   }
-        // }
       }
     }
     .bottom {
@@ -750,17 +669,7 @@ onUnmounted(() => {
       gap: 20px;
 
       .carousel-box {
-        // width: 304px; /* 单个盒子的宽度 */
-        // height: 324px; /* 单个盒子的高度 */
-        // display: flex;
-        // justify-content: center;
-        // align-items: center;
-        // background-color: #f0f0f0;
-        // border: 1px solid #ccc;
-        // box-sizing: border-box;
-        // text-align: center;
-        // font-size: 16px;
-        width: 304px;
+        width: 244px;
         height: 324px;
         box-sizing: border-box;
         background: #fff;
@@ -772,9 +681,8 @@ onUnmounted(() => {
           justify-content: space-between;
           border-bottom: 1px solid @border1;
           margin-bottom: 12px;
-          // height: 37px;
           .car-num {
-            font-size: 18px;
+            font-size: 22px;
             font-weight: bold;
           }
           .order-num {

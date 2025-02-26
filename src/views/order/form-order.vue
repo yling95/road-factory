@@ -183,7 +183,7 @@ const formRules = ref<{ [key: string]: RuleObject[] }>({
     },
   ],
   product_type: [{ required: true, message: '请选择订单类型', trigger: 'blur' }],
-  sample_img_url: [{ required: true, message: '请上传产品图', trigger: 'blur' }],
+  sample_img_url: [{ required: false, message: '请上传产品图', trigger: 'blur' }],
 })
 
 const productItem = { name: '', warehouse: undefined, count: '', unit: '' }

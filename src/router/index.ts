@@ -78,15 +78,14 @@ export const routes: Array<RouteRecordRaw> = [
       noAuth: true,
     },
     component: () => import('@/views/login/login.vue')
-    // beforeEnter: (_to, _from, next) => {
-    //   const toHref = localStorage.getItem('to-href')
-    //   if (!!toHref) {
-    //     localStorage.removeItem('to-href')
-    //     next(toHref)
-    //   } else {
-    //     next()
-    //   }
-    // },
+  },
+  {
+    path: '/404',
+    meta: {
+      title: '404',
+      noAuth: true,
+    },
+    component: () => import('@/views/not-found.vue')
   },
   {
     path: '/largeScreen',
@@ -103,25 +102,22 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
 
   const { token } = useUserStore()
-  console.log('路由', to.meta.noAuth, token)
 
-  // const { isUpdateMenu } = useMenuStore()
   // 1.判断路由是否需要校验权限（是否需要登录）
   if (to.meta.noAuth) return next()
-  console.log('2222')
 
   // 2.判断是否已经登录
   if (!token) return next('/login')
+
+  // 3. 判断目标路由是否存在
+  const hasRoute = router.getRoutes().some(route => route.path === to.path)
+  if (!hasRoute) {
+    // 如果没有找到路由，跳转到 404 页面
+    return next('/404') // 你可以根据实际情况设置自己的 404 页面路径
+  }
   next()
-  console.log('333')
-  // 3.判断是否需要更新菜单
-  // if (isUpdateMenu) {
-  //   // 加载菜单
-  //   loadMenus(to, from, next)
-  // } else {
-  //   // 校验路由
-  //   checkRoutes(to, from, next)
-  // }
+
+
 })
 
 export default router

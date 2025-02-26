@@ -39,6 +39,11 @@
         <div class="filter-item">
           <a-range-picker v-model:value="searchTime" @change="handleSearch" />
         </div>
+        <div class="filter-item">
+          <a-checkbox v-model:checked="pageForm.urgent" @change="handleSearch"
+            >仅显示加急订单</a-checkbox
+          >
+        </div>
       </div>
 
       <!-- 表格 -->
@@ -71,10 +76,7 @@
               >
                 {{ findLabelByValue(Order_Status_Types, record.status) }}
 
-                <i
-                  class="ri-fire-fill urgency"
-                  v-if="record.urgent && record.status !== 'outbound_done'"
-                ></i>
+                <i class="ri-fire-fill urgency" v-if="record.urgent"></i>
               </span>
               <span style="font-size: 14px" class="pause_text" v-if="record.pause">（暂停）</span>
             </div>
@@ -122,7 +124,7 @@
                 </a-button>
                 <a-button
                   type="link"
-                  v-if="record.status === 'wait_outbound' && isSalesManage"
+                  v-if="record.status !== 'outbound_done' && isSalesManage"
                   @click="handleSalesOperate('receiveInfo', record)"
                 >
                   <!-- /修改 -->
@@ -167,7 +169,7 @@
                         <a href="javascript:;">回退</a>
                       </a-menu-item>
                       <a-menu-item
-                        v-if="record.outbound_type === 'logistics' && FactoryOperate"
+                        v-if="record.outbound_type === 'logistics' && FactoryOperate && record.status !== 'outbound_done'"
                         @click="handleFactoryOperate(record, 'print')"
                       >
                         <a href="javascript:;">打印物流单</a>
@@ -216,7 +218,7 @@
 <script lang="ts" setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import useList from '@/hooks/useList'
-import { orderApi, commonApi } from '@/services/api'
+import { orderApi } from '@/services/api'
 import { message, Modal, type TableProps } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
 import { Order_Status_Types, Product_Types } from '../baseData'
@@ -290,6 +292,9 @@ const batchUrgency = () => {
 // 查询
 const searchTime = ref<RangeValue | undefined>(undefined)
 const handleSearch = () => {
+  if (!pageForm.urgent) {
+    pageForm.urgent = undefined
+  }
   if (searchTime.value) {
     pageForm.start_date = dayjs(searchTime.value?.[0]).startOf('date').format('YYYY-MM-DD')
     pageForm.end_date = dayjs(searchTime.value?.[1]).endOf('date').format('YYYY-MM-DD')
@@ -346,8 +351,6 @@ const handleFactoryOperate = (item: any, operateType?: any) => {
 
 // 销售端操作
 const handleSalesOperate = (type: salesOperateTypes, item: any) => {
-  console.log('操作', type, item)
-
   salesOperateRef.value.openModal(type, item)
 }
 
@@ -419,6 +422,7 @@ const { dataList, getDataList, loading, pageForm } = useList(
     start_date: undefined,
     end_date: undefined,
     status: undefined,
+    urgent: undefined,
   },
   () => {
     console.log('订单列表', dataList.value)
@@ -426,10 +430,8 @@ const { dataList, getDataList, loading, pageForm } = useList(
 )
 const tableChange: TableProps<any>['onChange'] = (pagination) => {
   pageForm.limit = pagination.pageSize || 10
-  console.log('-----', pagination)
   pageForm.page = pagination.current as number
   console.log('搜索', pageForm)
-
   getDataList({
     page: pagination.current,
   })
@@ -437,6 +439,15 @@ const tableChange: TableProps<any>['onChange'] = (pagination) => {
 
 // 初始化
 onMounted(() => {
+  const search_order_type = sessionStorage.getItem('search_order_type')
+  if (search_order_type) {
+    if (search_order_type !== 'urgent') {
+      pageForm.status = search_order_type as any
+    } else {
+      pageForm.urgent = true
+    }
+  }
+  sessionStorage.removeItem('search_order_type')
   getDataList()
 })
 </script>
@@ -450,21 +461,21 @@ onMounted(() => {
 .filter {
   padding: 12px 0;
   display: flex;
+  align-items: center;
   gap: 16px;
 }
 .table-wrap {
   padding: 20px 0;
 }
 .table-operation {
+  display: flex;
+  white-space: nowrap;
   :deep(.ant-btn) {
     padding: 0;
   }
 }
 .order-state {
   position: relative;
-  // display: flex;
-  // white-space: nowrap;
-  // align-items: center;
   .urgency {
     position: absolute;
     right: -6px;

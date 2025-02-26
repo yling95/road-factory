@@ -5,12 +5,10 @@
     @ok="saveAndPrint"
     @cancel="saveAndPrintClose"
   >
-    <!-- v-if="!printBase64"  -->
     <div class="logistics-tickt" id="printArea" v-if="!printBase64" ref="printAreaRef">
       <div class="title">发货</div>
       <div class="logistics">
-        物流：{{
-          findLabelByValue(Logistics_Company, detailData?.delivery_info.details.logistics_company)
+        {{ findLabelByValue(Logistics_Company, detailData?.delivery_info.details.logistics_company)
         }}{{ printLogisticNum }}
       </div>
       <div class="dress">收货地址：{{ detailData?.delivery_info.details.delivery_address }}</div>
@@ -40,6 +38,11 @@
       <div class="time">{{ currentTime.format('YYYY-MM-DD HH:mm:ss') }}</div>
     </div>
     <img :src="printBase64" style="margin: 0 auto; display: block" v-else />
+    <template #footer>
+      <a-button @click="saveAndPrintClose">取消</a-button>
+      <a-button type="primary" @click="saveImg">保存图片</a-button>
+      <a-button type="primary" @click="saveAndPrint" :disabled="!printBase64">打印</a-button>
+    </template>
   </a-modal>
 </template>
 
@@ -50,12 +53,12 @@ import { orderApi } from '@/services/api'
 import { findLabelByValue } from '@/utils/common'
 import { Logistics_Company, Store_Base } from '@/views/baseData'
 import html2canvas from 'html2canvas'
-import { log } from 'console'
 
 const deliveryInfoVisible = ref(false)
 const detailData = ref()
 const printLogisticNum = ref()
 let timer: any // 定义定时器
+
 const currentTime = ref<any>(dayjs())
 const openTimeInterval = () => {
   timer = setInterval(() => {
@@ -109,13 +112,139 @@ const printBase64Image = (base64Image: string) => {
   // 打印后移除 iframe
   document.body.removeChild(iframe)
 }
+// const printImage = () => {
+//   // 打开一个新窗口
+//   const printWindow = window.open('', '_blank')
+
+//   // 写入HTML内容
+//   printWindow?.document.write(`
+//         <html>
+//           <head>
+//             <title>打印物流单</title>
+//             <style>
+//               body {
+//                 margin: 0;
+//                 padding: 0;
+//                 display: flex;
+//                 justify-content: center;
+//                 align-items: center;
+//                 height: 100vh;
+//               }
+//               img {
+//                 width: 287px;
+//                 height: 491px;
+//                 object-fit: contain; /* 确保图片按比例缩放 */
+//               }
+//             </style>
+//           </head>
+//           <body>
+//             <img src="${printBase64.value}" />
+//           </body>
+//         </html>
+//       `)
+
+//   // 关闭文档写入
+//   printWindow?.document.close()
+
+//   // 触发打印
+//   printWindow!.onload = function () {
+//     printWindow?.print()
+//   }
+// }
+const printImage = () => {
+  // 打开一个新窗口
+  const printWindow = window.open('', '_blank')
+
+  // 写入HTML内容
+  printWindow?.document.write(`
+        <html>
+          <head>
+            <title>打印物流单</title>
+            <style>
+              body {
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100%;
+              }
+              img {
+                width: 100%;  /* 设置图片适应打印区域 */
+                height: auto; /* 保持宽高比 */
+                object-fit: contain;  /* 确保图片按比例缩放 */
+              }
+              /* 打印样式 */
+              @media print {
+                body {
+                  margin: 0;
+                  padding: 0;
+                  overflow: visible;
+                }
+                img {
+                  width: 100%;
+                  height: auto;
+                }
+                /* 确保只使用一页打印 */
+                @page {
+                  margin: 0;         /* 移除边距 */
+                  size: auto;        /* 自动调整大小 */
+                  size: A4;          /* A4 纸大小 */
+                  page-break-before: avoid; /* 避免分页 */
+                  page-break-after: avoid;
+                  page-break-inside: avoid;
+                }
+                html, body {
+                  margin: 0;
+                  padding: 0;
+                  width: 100%;
+                  height: 100%;
+                }
+                /* 防止分页，确保所有内容放在同一页 */
+                .no-page-break {
+                  page-break-before: avoid;
+                  page-break-after: avoid;
+                  page-break-inside: avoid;
+                }
+              }
+            </style>
+          </head>
+          <body class="no-page-break">
+            <img src="${printBase64.value}" />
+          </body>
+        </html>
+      `)
+
+  // 关闭文档写入
+  printWindow?.document.close()
+
+  // 触发打印
+  printWindow!.onload = function () {
+    printWindow?.print()
+  }
+}
 
 // 打印物流单
 const saveAndPrint = () => {
   printBase64Image(printBase64.value)
+  // printImage()
 }
+
+
+const saveImg = () => {
+  // 创建一个隐藏的<a>标签
+  const a = document.createElement('a')
+  a.href = printBase64.value // Base64 图片地址
+  a.download = `${detailData.value.order_number}.png` // 图片保存时的文件名
+  document.body.appendChild(a) // 添加到 DOM
+  a.click() // 触发点击事件
+  document.body.removeChild(a) // 移除 a 标签
+  // 将 Base64 数据转换为 Blob 对象
+}
+
 const saveAndPrintClose = () => {
   clearInterValTimer()
+  deliveryInfoVisible.value = false
 }
 
 const printBase64 = ref()
@@ -133,26 +262,7 @@ const divToImg = async () => {
     // 将 Canvas 转为图片
     const imgData = canvas.toDataURL('image/png')
 
-    // 创建一个隐藏的 a 标签用于下载图片
-    const a = document.createElement('a')
-    a.href = imgData // Base64 图片地址
-    a.download = 'saved-image.png' // 图片保存时的文件名
     printBase64.value = imgData
-
-    // 模拟点击下载
-    // document.body.appendChild(a) // 添加到 DOM
-    // a.click() // 触发点击事件
-    // document.body.removeChild(a) // 移除 a 标签
-
-    console.log('图片已保存到本机', imgData)
-
-    // 打开新的窗口并打印图片
-    // const newWindow = window.open('', '', 'width=287,height=491')
-    // newWindow.document.write(`<img src="${imgData}" style="width:100%;"/>`)
-    // newWindow.document.close()
-    // newWindow.focus()
-    // newWindow.print()
-    // newWindow.close()
   } catch (error) {
     console.error('打印失败', error)
   }
@@ -172,7 +282,7 @@ const open = async (orderNumber: any) => {
   printBase64.value = ''
 
   const results = await Promise.all([getOrderDetail(orderNumber), getLogisticsPrinNum(orderNumber)])
-  console.log('所有任务执行完成', results)
+  // console.log('所有任务执行完成', results)
   deliveryInfoVisible.value = true
   nextTick(() => {
     divToImg()

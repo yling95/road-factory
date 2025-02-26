@@ -13,32 +13,46 @@
           </div>
         </div>
         <div class="content">
-          <div class="form">
-            <a-input
-              placeholder="请输入账号"
-              :bordered="true"
-              :maxlength="11"
-              v-model:value.trim="formState.account"
-              class="login-input"
-            />
-            <a-input-password
-              placeholder="请输入密码"
-              :bordered="true"
-              v-model:value.trim="formState.password"
-              :maxlength="40"
-              v-model:visible="passwordVisible"
-              class="login-input"
-            />
+          <a-form
+            class="form"
+            :model="formState"
+            ref="formRef"
+            @submit="handleLogin"
+            :rules="formRuls"
+          >
+            <a-form-item name="account">
+              <a-input
+                placeholder="请输入账号"
+                :bordered="true"
+                :maxlength="11"
+                v-model:value.trim="formState.account"
+                class="login-input"
+              />
+            </a-form-item>
+            <a-form-item name="password">
+              <a-input-password
+                placeholder="请输入密码"
+                :bordered="true"
+                v-model:value.trim="formState.password"
+                :maxlength="40"
+                v-model:visible="passwordVisible"
+                class="login-input"
+              />
+            </a-form-item>
+            <a-form-item>
+              <a-checkbox v-model:checked="formState.remember">记住账号</a-checkbox>
+            </a-form-item>
             <span class="forget" @click="forgetPassword">忘记密码？</span>
             <a-button
               class="login-btn"
               type="primary"
-              @click="login"
+              html-type="submit"
+              @click="handleLogin"
               :loading="loading || loadingTwo"
               >登录
               <i class="ri-arrow-right-line right-icon"></i>
             </a-button>
-          </div>
+          </a-form>
         </div>
       </div>
     </div>
@@ -46,19 +60,26 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
 import { Modal } from 'ant-design-vue'
 import { useRequest } from 'vue-request'
 import { userApi } from '@/services/api'
 import { useUserStore } from '@/stores/user'
 import router from '@/router'
+import { base64Decode, base64Encode } from '@/utils/index'
 
 const userStore = useUserStore()
 
+const formRef = ref()
 const passwordVisible = ref(false)
 const formState = reactive({
-  account: 'admin',
-  password: '123456',
+  account: '',
+  password: '',
+  remember: false,
+})
+const formRuls = reactive<{ [key: string]: any[] }>({
+  account: [{ required: true, message: '请输入账号', trigger: 'blur' }],
+  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
 })
 const forgetPassword = () => {
   Modal.confirm({
@@ -70,27 +91,50 @@ const forgetPassword = () => {
 
 const { loading, runAsync: runLogin } = useRequest(userApi.login)
 const { loading: loadingTwo, runAsync: runGetUserInfo } = useRequest(userApi.getUserInfo)
-const login = async () => {
-  try {
-    console.log('登录参数', formState)
+const handleLogin = () => {
+  formRef.value
+    .validate()
+    .then(async () => {
+      try {
+        const { data } = await runLogin(formState)
+        userStore.updateToken(data.token)
+        if (data.token) {
+          const res = await runGetUserInfo(formState.account)
+          console.log('获取用户信息', res)
+          if (res.data) {
+            userStore.updateUserInfo(res.data)
+            router.replace('/')
 
-    const { data } = await runLogin(formState)
-    userStore.updateToken(data.token)
-    // userStore.updateUserInfo(data)
-    if (data.token) {
-      const res = await runGetUserInfo(formState.account)
-      console.log('获取用户信息', res)
-      if (res.data) {
-        userStore.updateUserInfo(res.data)
-        router.replace('/')
+            // 登录完成-跳转
+            userStore.updateRemember(formState.remember)
+            if (formState.remember) {
+              localStorage.setItem('remember', 'true')
+              localStorage.setItem('account', formState.account)
+              console.log('666', base64Encode(formState.password))
+
+              localStorage.setItem('password', base64Encode(formState.password))
+            } else {
+              localStorage.removeItem('account')
+              localStorage.removeItem('password')
+              localStorage.removeItem('remember')
+            }
+          }
+        }
+      } catch (error: any) {
+        console.log('登录失败', error)
       }
-    }
-
-    console.log('登录', formState)
-  } catch (error: any) {
-    console.log('登录失败', error)
-  }
+    })
+    .catch((error: any) => {
+      console.log('6666', formState, error)
+    })
 }
+
+onMounted(() => {
+  formState.account = localStorage.getItem('account') || ''
+  formState.remember = localStorage.getItem('remember') === 'true'
+  const orlPassword = localStorage.getItem('password') || ''
+  formState.password = base64Decode(orlPassword)
+})
 </script>
 
 <style scoped lang="less">
@@ -159,7 +203,7 @@ const login = async () => {
           height: 68px;
           font-size: 16px;
           width: 100%;
-          margin-bottom: 32px;
+          // margin-bottom: 32px;
         }
         .forget {
           margin-top: 32px;

@@ -42,7 +42,7 @@
         </a-form-item>
       </a-form>
       <!-- 制作完成 -->
-      <a-form
+      <!-- <a-form
         v-if="nowOperateType === 'runEnd'"
         class="accept-modal"
         ref="finishFormRef"
@@ -65,7 +65,7 @@
             </a-button>
           </a-upload>
         </a-form-item>
-      </a-form>
+      </a-form> -->
       <!-- 出库 -->
       <a-form
         v-if="nowOperateType === 'outStore'"
@@ -163,7 +163,7 @@ import { useRequest } from 'vue-request'
 import dayjs from 'dayjs'
 import axios from 'axios'
 import { orderApi, commonApi } from '@/services/api'
-import { message } from 'ant-design-vue'
+import { message, Modal } from 'ant-design-vue'
 import { findLabelByValue, getImgUrlByUrl } from '@/utils/common'
 import type { UploadRequestOption } from 'ant-design-vue/es/vc-upload/interface'
 import { Shipment_Types } from '@/views/baseData'
@@ -389,7 +389,6 @@ const handleClose = () => {
 
 const detailData = ref()
 const openModal = async (type: factoryOperateTypes, item: any) => {
-  console.log('----', item)
   nowOperateType.value = type
   nowOperateOrder.value = item
   switch (type) {
@@ -399,26 +398,26 @@ const openModal = async (type: factoryOperateTypes, item: any) => {
       break
 
     case 'runEnd':
-      modalTitle.value = `制作完成订单（${item.order_number}）`
-      modalOpen.value = true
-      // Modal.confirm({
-      //   content: `确认制作完成订单（${item.order_number}）`,
-      //   okText: '确认',
-      //   cancelText: '取消',
-      //   okButtonProps: {
-      //     loading: loadingFinish.value,
-      //   },
-      //   onOk: async () => {
-      //     return new Promise(async function (resolve) {
-      //       const res = await runFinish(item.order_number)
-      //       if (res) {
-      //         message.success(`订单（${item.order_number}）加急成功`)
-      //         resolve(true)
-      //         emits('getList')
-      //       }
-      //     })
-      //   },
-      // })
+      // modalTitle.value = `制作完成订单（${item.order_number}）`
+      // modalOpen.value = true
+      Modal.confirm({
+        content: `确认制作完成订单（${item.order_number}）`,
+        okText: '确认',
+        cancelText: '取消',
+        okButtonProps: {
+          loading: loadingFinish.value,
+        },
+        onOk: async () => {
+          return new Promise(async function (resolve) {
+            const res = await runFinish(nowOperateOrder.value.order_number, finishForm)
+            if (res) {
+              message.success(`订单（${item.order_number}）制作完成`)
+              resolve(true)
+              emits('getList')
+            }
+          })
+        },
+      })
       break
 
     case 'outStore':
@@ -436,10 +435,6 @@ const openModal = async (type: factoryOperateTypes, item: any) => {
       break
   }
 }
-
-onMounted(() => {
-  // openModal('outStore', { order_number: '65478912' })
-})
 
 defineExpose({
   openModal,
