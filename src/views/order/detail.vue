@@ -30,12 +30,14 @@
             <span class="label">产品图：</span>
             <span class="value">
               <a-image
+                v-if="orderDetail.sample_img_url"
                 :src="getImgUrlByUrl(orderDetail.sample_img_url)"
                 :height="220"
                 :width="160"
                 class="sample-img"
                 alt=""
               />
+              <span v-else>无</span>
             </span>
           </div>
           <div class="detial-item wrap-2">
@@ -78,7 +80,7 @@
               <div v-else>
                 <a-image
                   v-if="isImage(orderDetail.product_effect_url)"
-                  :src="orderDetail.product_effect_url"
+                  :src="getImgUrlByUrl(orderDetail.product_effect_url)"
                   :height="220"
                   :width="160"
                   class="sample-img"
@@ -87,7 +89,7 @@
 
                 <video
                   v-if="isVideo(orderDetail.product_effect_url)"
-                  :src="orderDetail.product_effect_url"
+                  :src="getImgUrlByUrl(orderDetail.product_effect_url)"
                   controls
                   width="300"
                 ></video>
@@ -159,7 +161,7 @@
               <div v-else>
                 <a-image
                   v-if="isImage(orderDetail.delivery_verify_url)"
-                  :src="orderDetail.delivery_verify_url"
+                  :src="getImgUrlByUrl(orderDetail.delivery_verify_url)"
                   :height="220"
                   :width="160"
                   class="sample-img"
@@ -167,7 +169,7 @@
                 />
                 <video
                   v-if="isVideo(orderDetail.delivery_verify_url)"
-                  :src="orderDetail.delivery_verify_url"
+                  :src="getImgUrlByUrl(orderDetail.delivery_verify_url)"
                   controls
                   width="160"
                 ></video>

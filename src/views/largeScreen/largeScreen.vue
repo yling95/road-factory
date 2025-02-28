@@ -25,11 +25,11 @@
               <div class="card carousel-box" v-for="item in selfPickupOrders" :key="item">
                 <div class="card-top">
                   <span class="car-num"> {{ item.license_plate }} </span>
-                  <span class="order-num"
+                  <div class="order-num"
                     >{{ item.customer_name }}（{{
-                      item.order_number.slice(0, 3) + '***' + item.order_number.slice(-2)
+                      item.order_number
                     }}）
-                  </span>
+                  </div>
                 </div>
                 <div class="card-content">
                   <div class="product-list-title">
@@ -676,9 +676,7 @@ onUnmounted(() => {
         border-radius: 16px;
         padding: 8px 12px;
         .card-top {
-          display: flex;
           padding: 8px 0;
-          justify-content: space-between;
           border-bottom: 1px solid @border1;
           margin-bottom: 12px;
           .car-num {

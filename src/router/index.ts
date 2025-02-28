@@ -109,11 +109,17 @@ router.beforeEach((to, from, next) => {
   // 2.判断是否已经登录
   if (!token) return next('/login')
 
-  // 3. 判断目标路由是否存在
-  const hasRoute = router.getRoutes().some(route => route.path === to.path)
+  const hasRoute = router.getRoutes().some(route => {
+    // 将动态路由路径（如 /order/detail/:id）转换为正则表达式
+    const dynamicPathRegex = new RegExp(
+      route.path.replace(/:\w+/g, '\\w+') // 将 :id 替换为 \w+
+    )
+    return dynamicPathRegex.test(to.path) // 判断当前路径是否匹配路由
+  })
+
   if (!hasRoute) {
     // 如果没有找到路由，跳转到 404 页面
-    return next('/404') // 你可以根据实际情况设置自己的 404 页面路径
+    return next('/404')
   }
   next()
 

@@ -3,12 +3,13 @@
     v-model:open="deliveryInfoVisible"
     :ok-text="'打印'"
     @ok="saveAndPrint"
+    :mask-closable="false"
     @cancel="saveAndPrintClose"
   >
-    <div class="logistics-tickt" id="printArea" v-if="!printBase64" ref="printAreaRef">
+    <div class="logistics-tickt" id="printArea"  v-if="!printBase64" ref="printAreaRef">
       <div class="title">发货</div>
       <div class="logistics">
-        {{ findLabelByValue(Logistics_Company, detailData?.delivery_info.details.logistics_company)
+       物流：{{ findLabelByValue(Logistics_Company, detailData?.delivery_info.details.logistics_company)
         }}{{ printLogisticNum }}
       </div>
       <div class="dress">收货地址：{{ detailData?.delivery_info.details.delivery_address }}</div>
@@ -303,6 +304,8 @@ onUnmounted(() => {
   height: 491px;
   padding: 12px 18px;
   box-sizing: border-box;
+  color: #000;
+  font-weight: 600;
   margin: 0 auto;
   font-size: 17px;
   .title {
@@ -316,14 +319,18 @@ onUnmounted(() => {
     margin-bottom: 8px;
   }
   .dress {
-    font-size: 19px;
+    font-size: 20px;
     margin-bottom: 4px;
+  }
+  .peron{
+    font-size: 18px;
   }
   .product-title {
     margin-top: 14px;
+    font-weight: bold;
   }
   .product-li {
-    font-size: 16px;
+    font-size: 18px;
   }
   .product-title,
   .product-li {
@@ -353,12 +360,15 @@ onUnmounted(() => {
     overflow: hidden; /* 内容超出隐藏 */
     -webkit-line-clamp: 2; /* 限制行数为2 */
     line-clamp: 2; /* 非标准属性，部分现代浏览器支持 */
+    font-size: 18px;
   }
   .info-store {
     text-align: right;
+    font-size: 18px;
   }
   .time {
     text-align: right;
+    font-size: 18px;
   }
 }
 </style>
